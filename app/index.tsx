@@ -347,23 +347,102 @@ function AppContent() {
             </View>
           </LinearGradient>
 
-          {/* Content with Bottom Navigation */}
+          {/* Content with Custom Bottom Navigation */}
           <View style={styles.content}>
-            <BottomNavigation
-              navigationState={{ index, routes }}
-              onIndexChange={setIndex}
-              renderScene={renderScene}
-              barStyle={{
-                backgroundColor: isDarkMode ? "#000000" : "#FFFFFF",
-                borderTopWidth: 1,
-                borderTopColor: isDarkMode ? "#333333" : "#E0E0E0",
-                paddingBottom: 8, // Reduced padding above home indicator
-                marginBottom: 4, // Reduced margin from bottom edge
-              }}
-              activeColor={isDarkMode ? "#FFFFFF" : "#1A1A1A"}
-              inactiveColor={isDarkMode ? "#CCCCCC" : "#999999"}
-              safeAreaInsets={{ bottom: 8 }}
-            />
+            {/* Main Content */}
+            <View style={styles.sceneContainer}>
+              {index === 0 && (
+                <UberStyleHome
+                  user={user}
+                  isDarkMode={isDarkMode}
+                  onLocationSelect={(location) => {
+                    // Location selected
+                  }}
+                  onServiceSelect={(service) => {
+                    // Service selected
+                  }}
+                />
+              )}
+              {index === 1 && <BusBookingSystem isDarkMode={isDarkMode} />}
+              {index === 2 && (
+                <UserProfileSafety
+                  user={user}
+                  onLogout={logout}
+                  isDarkMode={isDarkMode}
+                />
+              )}
+            </View>
+
+            {/* Custom Bottom Navigation */}
+            <View
+              style={[
+                styles.bottomNavContainer,
+                {
+                  backgroundColor: isDarkMode ? "#000000" : "#FFFFFF",
+                  borderTopColor: isDarkMode ? "#333333" : "#E0E0E0",
+                },
+              ]}
+            >
+              {routes.map((route, routeIndex) => {
+                const isActive = index === routeIndex;
+                const iconName = isActive
+                  ? route.focusedIcon
+                  : route.unfocusedIcon;
+
+                return (
+                  <Animated.View
+                    key={route.key}
+                    style={[styles.tabItem, isActive && styles.activeTabItem]}
+                  >
+                    {isActive && (
+                      <LinearGradient
+                        colors={["#6366f1", "#8b5cf6"]}
+                        style={styles.activeTabBackground}
+                      />
+                    )}
+                    <IconButton
+                      icon={iconName}
+                      size={24}
+                      iconColor={
+                        isActive
+                          ? "#FFFFFF"
+                          : isDarkMode
+                          ? "#CCCCCC"
+                          : "#999999"
+                      }
+                      onPress={() => setIndex(routeIndex)}
+                      style={[
+                        styles.tabButton,
+                        isActive && styles.activeTabButton,
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.tabLabel,
+                        {
+                          color: isActive
+                            ? "#FFFFFF"
+                            : isDarkMode
+                            ? "#CCCCCC"
+                            : "#999999",
+                          fontWeight: isActive ? "600" : "400",
+                        },
+                      ]}
+                    >
+                      {route.title}
+                    </Text>
+                    {isActive && (
+                      <View
+                        style={[
+                          styles.activeIndicator,
+                          { backgroundColor: "#FFFFFF" },
+                        ]}
+                      />
+                    )}
+                  </Animated.View>
+                );
+              })}
+            </View>
           </View>
         </Animated.View>
       </SafeAreaView>
@@ -456,5 +535,57 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  sceneContainer: {
+    flex: 1,
+  },
+  bottomNavContainer: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    paddingBottom: 12,
+    marginBottom: 4,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 16,
+    position: "relative",
+    minHeight: 64,
+  },
+  activeTabItem: {
+    transform: [{ scale: 1.05 }],
+  },
+  activeTabBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 16,
+    opacity: 0.9,
+  },
+  tabButton: {
+    margin: 0,
+    backgroundColor: "transparent",
+  },
+  activeTabButton: {
+    backgroundColor: "transparent",
+  },
+  tabLabel: {
+    fontSize: 11,
+    marginTop: 2,
+    textAlign: "center",
+  },
+  activeIndicator: {
+    position: "absolute",
+    bottom: -2,
+    width: 24,
+    height: 3,
+    borderRadius: 2,
   },
 });
