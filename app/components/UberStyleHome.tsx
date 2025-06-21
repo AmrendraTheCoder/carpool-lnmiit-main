@@ -7,6 +7,8 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
+  Alert,
+  Vibration,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -38,6 +40,8 @@ interface UberStyleHomeProps {
   isDarkMode?: boolean;
   onLocationSelect?: (location: string) => void;
   onServiceSelect?: (service: string) => void;
+  onCreateRide?: () => void;
+  onShowBusBooking?: () => void;
 }
 
 const { width } = Dimensions.get("window");
@@ -47,12 +51,99 @@ const UberStyleHome = ({
   isDarkMode = false,
   onLocationSelect,
   onServiceSelect,
+  onCreateRide,
+  onShowBusBooking,
 }: UberStyleHomeProps) => {
   const theme = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [showBookingFlow, setShowBookingFlow] = useState(false);
   const [showRideTracking, setShowRideTracking] = useState(false);
   const [currentRide, setCurrentRide] = useState<any>(null);
+
+  const handleServiceSelect = (service: string) => {
+    Vibration.vibrate(50); // Haptic feedback
+
+    switch (service.toLowerCase()) {
+      case "ride":
+        setShowBookingFlow(true);
+        break;
+      case "reserve":
+        Alert.alert("Schedule Ride", "Book a ride for later", [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Schedule",
+            onPress: () => {
+              setShowBookingFlow(true);
+            },
+          },
+        ]);
+        break;
+      case "bus":
+        if (onShowBusBooking) {
+          onShowBusBooking();
+        } else {
+          Alert.alert("Bus Booking", "Bus booking feature coming soon!");
+        }
+        break;
+      case "group":
+        if (onCreateRide) {
+          onCreateRide();
+        } else {
+          Alert.alert("Group Ride", "Create a group ride to share costs!");
+        }
+        break;
+      default:
+        onServiceSelect?.(service);
+    }
+  };
+
+  const handleLocationSelect = (location: string) => {
+    Vibration.vibrate(50); // Haptic feedback
+
+    if (location === "Add your home address") {
+      Alert.alert(
+        "Add Home Address",
+        "Would you like to add your home address for quick access?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Add Address",
+            onPress: () => {
+              Alert.alert(
+                "Feature Coming Soon",
+                "Address management will be available in the next update!"
+              );
+            },
+          },
+        ]
+      );
+    } else {
+      onLocationSelect?.(location);
+      setShowBookingFlow(true);
+    }
+  };
+
+  const handlePlanningOptionSelect = (option: string) => {
+    Vibration.vibrate(50); // Haptic feedback
+
+    switch (option) {
+      case "Schedule a ride":
+        setShowBookingFlow(true);
+        break;
+      case "Group rides":
+        if (onCreateRide) {
+          onCreateRide();
+        } else {
+          Alert.alert(
+            "Group Rides",
+            "Create or join group rides to save money!"
+          );
+        }
+        break;
+      default:
+        Alert.alert("Feature", `${option} feature coming soon!`);
+    }
+  };
 
   const savedLocations = [
     {
@@ -76,6 +167,7 @@ const UberStyleHome = ({
       icon: Car,
       color: isDarkMode ? "#FFFFFF" : "#000000",
       bgColor: isDarkMode ? "#2A2A2A" : "#E8E8E8",
+      description: "Book a ride now",
     },
     {
       id: "2",
@@ -83,6 +175,7 @@ const UberStyleHome = ({
       icon: Calendar,
       color: isDarkMode ? "#FFFFFF" : "#000000",
       bgColor: isDarkMode ? "#2A2A2A" : "#E8E8E8",
+      description: "Schedule for later",
     },
     {
       id: "3",
@@ -90,6 +183,7 @@ const UberStyleHome = ({
       icon: Bus,
       color: isDarkMode ? "#FFFFFF" : "#000000",
       bgColor: isDarkMode ? "#2A2A2A" : "#E8E8E8",
+      description: "College bus booking",
     },
     {
       id: "4",
@@ -97,6 +191,7 @@ const UberStyleHome = ({
       icon: Users,
       color: isDarkMode ? "#FFFFFF" : "#000000",
       bgColor: isDarkMode ? "#2A2A2A" : "#E8E8E8",
+      description: "Share rides & costs",
     },
   ];
 
@@ -170,6 +265,7 @@ const UberStyleHome = ({
             },
           ]}
           onPress={() => setShowBookingFlow(true)}
+          activeOpacity={0.7}
         >
           <Search size={20} color={isDarkMode ? "#CCCCCC" : "#666666"} />
           <Text
@@ -207,7 +303,8 @@ const UberStyleHome = ({
                 styles.savedLocation,
                 { borderBottomColor: isDarkMode ? "#333333" : "#E0E0E0" },
               ]}
-              onPress={() => onLocationSelect?.(location.name)}
+              onPress={() => handleLocationSelect(location.address)}
+              activeOpacity={0.7}
             >
               <View style={styles.locationIcon}>
                 <Text style={styles.locationEmoji}>{location.icon}</Text>
@@ -252,10 +349,8 @@ const UberStyleHome = ({
                   styles.suggestionCard,
                   { backgroundColor: suggestion.bgColor },
                 ]}
-                onPress={() => {
-                  // Service selected
-                  onServiceSelect?.(suggestion.title);
-                }}
+                onPress={() => handleServiceSelect(suggestion.title)}
+                activeOpacity={0.7}
               >
                 <View
                   style={[
@@ -272,6 +367,14 @@ const UberStyleHome = ({
                   ]}
                 >
                   {suggestion.title}
+                </Text>
+                <Text
+                  style={[
+                    styles.suggestionDescription,
+                    { color: isDarkMode ? "#CCCCCC" : "#666666" },
+                  ]}
+                >
+                  {suggestion.description}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -296,6 +399,8 @@ const UberStyleHome = ({
                   styles.planningCard,
                   { backgroundColor: option.bgColor },
                 ]}
+                onPress={() => handlePlanningOptionSelect(option.title)}
+                activeOpacity={0.7}
               >
                 <Text style={styles.planningEmoji}>{option.emoji}</Text>
                 <View style={styles.planningText}>
@@ -339,18 +444,16 @@ const UberStyleHome = ({
                   styles.recentItem,
                   { borderBottomColor: isDarkMode ? "#333333" : "#E0E0E0" },
                 ]}
-                onPress={() => {
-                  // Location selected
-                  onLocationSelect?.(destination);
-                }}
+                onPress={() => handleLocationSelect(destination)}
+                activeOpacity={0.7}
               >
                 <View
                   style={[
                     styles.recentIcon,
-                    { backgroundColor: isDarkMode ? "#1A1A1A" : "#F5F5F5" },
+                    { backgroundColor: isDarkMode ? "#333333" : "#E0E0E0" },
                   ]}
                 >
-                  <Clock size={16} color={isDarkMode ? "#CCCCCC" : "#666666"} />
+                  <Clock size={16} color={isDarkMode ? "#FFFFFF" : "#666666"} />
                 </View>
                 <Text
                   style={[
@@ -364,9 +467,6 @@ const UberStyleHome = ({
             ))}
           </View>
         </View>
-
-        {/* Bottom spacing for navigation */}
-        <View style={{ height: 20 }} />
       </ScrollView>
     </View>
   );
@@ -485,6 +585,12 @@ const styles = StyleSheet.create({
   suggestionText: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  suggestionDescription: {
+    fontSize: 12,
+    marginTop: 4,
+    textAlign: "center",
+    opacity: 0.8,
   },
   planningContainer: {
     gap: 12,

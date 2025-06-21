@@ -34,15 +34,7 @@ import {
   Users,
   CheckCheck,
   Info,
-  Smile,
-  Paperclip,
   Mic,
-  Reply,
-  Heart,
-  ThumbsUp,
-  Laugh,
-  Camera,
-  Plus,
 } from "lucide-react-native";
 import { socketService, ChatMessage } from "../services/SocketService";
 
@@ -90,6 +82,8 @@ interface EnhancedChatMessage extends ChatMessage {
   messageType?: "text" | "image" | "location" | "system";
 }
 
+// Common emoji reactions
+
 export default function ChatScreen({
   rideId,
   currentUserId,
@@ -116,17 +110,11 @@ export default function ChatScreen({
   const [showInvitation, setShowInvitation] = useState(true);
   const [invitationAccepted, setInvitationAccepted] = useState(false);
   const [showRideInfo, setShowRideInfo] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
-  const [typingUsers, setTypingUsers] = useState<string[]>([]);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [selectedMessage, setSelectedMessage] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<EnhancedChatMessage | null>(
     null
   );
-  const [showAttachments, setShowAttachments] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const inputRef = useRef<TextInput>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     // Connect to socket and join ride chat
@@ -145,18 +133,9 @@ export default function ChatScreen({
     // Load existing messages
     loadExistingMessages();
 
-    // Simulate typing users for demo
-    setTimeout(() => {
-      setTypingUsers(["Priya Sharma"]);
-      setTimeout(() => setTypingUsers([]), 3000);
-    }, 5000);
-
     return () => {
       socketService.offNewMessage();
       socketService.leaveRideChat(rideId);
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
     };
   }, [rideId, currentUserId]);
 
@@ -170,7 +149,7 @@ export default function ChatScreen({
         timestamp: new Date(Date.now() - 3600000),
         rideId,
         senderPhoto: rideDetails.driverPhoto,
-        reactions: [{ emoji: "👍", count: 2, users: ["user456", "user789"] }],
+
         messageType: "text",
       },
       {
@@ -181,7 +160,7 @@ export default function ChatScreen({
         timestamp: new Date(Date.now() - 3000000),
         rideId,
         senderPhoto: "https://api.dicebear.com/7.x/avataaars/svg?seed=priya",
-        reactions: [{ emoji: "❤️", count: 1, users: ["driver123"] }],
+
         messageType: "text",
       },
       {
@@ -198,10 +177,9 @@ export default function ChatScreen({
         id: "4",
         senderId: "system",
         senderName: "System",
-        message: "Priya Sharma joined the ride",
+        message: `${currentUserName} joined the ride`,
         timestamp: new Date(Date.now() - 1800000),
         rideId,
-        senderPhoto: "",
         messageType: "system",
       },
     ];
@@ -209,24 +187,42 @@ export default function ChatScreen({
   };
 
   const handleAcceptInvitation = () => {
+    Vibration.vibrate([100, 50, 100]);
     setInvitationAccepted(true);
     setShowInvitation(false);
 
-    // Send acceptance message
-    const acceptanceMessage = {
-      senderId: currentUserId,
-      senderName: currentUserName,
-      message:
-        "✅ I've accepted the ride invitation! Looking forward to the trip.",
+    // Add system message
+    const joinMessage: EnhancedChatMessage = {
+      id: Date.now().toString(),
+      senderId: "system",
+      senderName: "System",
+      message: `${currentUserName} accepted the ride invitation! 🎉`,
+      timestamp: new Date(),
       rideId,
+      messageType: "system",
     };
 
-    socketService.sendMessage(acceptanceMessage);
+    setMessages((prev) => [...prev, joinMessage]);
+
+    // Add welcome message from driver
+    setTimeout(() => {
+      const welcomeMessage: EnhancedChatMessage = {
+        id: (Date.now() + 1).toString(),
+        senderId: "driver123",
+        senderName: rideDetails.driverName,
+        message: `Welcome aboard! Looking forward to the ride. Please be ready 5 minutes before departure time.`,
+        timestamp: new Date(),
+        rideId,
+        senderPhoto: rideDetails.driverPhoto,
+        messageType: "text",
+      };
+      setMessages((prev) => [...prev, welcomeMessage]);
+    }, 1000);
 
     Alert.alert(
-      "Ride Accepted!",
-      `You've successfully joined the ride from ${rideDetails.from} to ${rideDetails.to}. The driver will contact you soon.`,
-      [{ text: "OK" }]
+      "Invitation Accepted! 🎉",
+      "You've successfully joined this ride. The ride creator will be notified.",
+      [{ text: "Great!", style: "default" }]
     );
   };
 
@@ -235,49 +231,50 @@ export default function ChatScreen({
     Alert.alert(
       "Invitation Declined",
       "You've declined this ride invitation.",
-      [{ text: "Go Back", onPress: onBack }, { text: "Stay in Chat" }]
+      [
+        { text: "OK", style: "default" },
+        { text: "Go Back", onPress: onBack, style: "cancel" },
+      ]
     );
   };
 
   const handleCall = () => {
-    Alert.alert("Call Driver", `Call ${rideDetails.driverName}?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Call",
-        onPress: () => {
-          const phoneNumber = `tel:${rideDetails.driverPhone}`;
-          Linking.openURL(phoneNumber).catch(() => {
-            Alert.alert("Error", "Unable to make phone call");
-          });
+    Alert.alert(
+      "Call Driver",
+      `Call ${rideDetails.driverName} at ${rideDetails.driverPhone}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Call",
+          onPress: () => {
+            Linking.openURL(`tel:${rideDetails.driverPhone}`);
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const sendMessage = () => {
-    if (!inputText.trim() || !isConnected) return;
+    if (inputText.trim() === "") return;
 
-    const messageData: EnhancedChatMessage = {
+    const newMessage: EnhancedChatMessage = {
       id: Date.now().toString(),
       senderId: currentUserId,
       senderName: currentUserName,
       message: inputText.trim(),
-      rideId,
       timestamp: new Date(),
+      rideId,
       senderPhoto: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUserId}`,
       messageType: "text",
       replyTo: replyingTo?.id,
     };
 
-    // Add message locally first for immediate feedback
-    setMessages((prev) => [...prev, messageData]);
-
-    // Send to socket
-    socketService.sendMessage(messageData);
-
-    // Clear input and reply
+    setMessages((prev) => [...prev, newMessage]);
     setInputText("");
     setReplyingTo(null);
+
+    // Send to server (for demo, we're just adding locally)
+    // socketService.sendMessage(newMessage);
 
     // Scroll to bottom
     setTimeout(() => {
@@ -285,65 +282,10 @@ export default function ChatScreen({
     }, 100);
   };
 
-  const handleTyping = () => {
-    if (!isTyping) {
-      setIsTyping(true);
-      socketService.sendTyping(rideId, currentUserId, true);
-    }
-
-    // Clear existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Set new timeout
-    typingTimeoutRef.current = setTimeout(() => {
-      setIsTyping(false);
-      socketService.sendTyping(rideId, currentUserId, false);
-    }, 1000);
-  };
-
-  const addReaction = (messageId: string, emoji: string) => {
-    setMessages((prev) =>
-      prev.map((msg) => {
-        if (msg.id === messageId) {
-          const reactions = msg.reactions || [];
-          const existingReaction = reactions.find((r) => r.emoji === emoji);
-
-          if (existingReaction) {
-            if (existingReaction.users.includes(currentUserId)) {
-              // Remove reaction
-              existingReaction.count--;
-              existingReaction.users = existingReaction.users.filter(
-                (u) => u !== currentUserId
-              );
-              if (existingReaction.count === 0) {
-                return {
-                  ...msg,
-                  reactions: reactions.filter((r) => r.emoji !== emoji),
-                };
-              }
-            } else {
-              // Add reaction
-              existingReaction.count++;
-              existingReaction.users.push(currentUserId);
-            }
-          } else {
-            // New reaction
-            reactions.push({ emoji, count: 1, users: [currentUserId] });
-          }
-
-          return { ...msg, reactions };
-        }
-        return msg;
-      })
-    );
-
-    Vibration.vibrate(50); // Haptic feedback
-  };
-
   const handleReply = (message: EnhancedChatMessage) => {
     setReplyingTo(message);
+    setShowMessageActions(false);
+    setSelectedMessage(null);
     inputRef.current?.focus();
   };
 
@@ -367,49 +309,6 @@ export default function ChatScreen({
         hour12: true,
       }).format(timestamp);
     }
-  };
-
-  const renderReactions = (reactions: MessageReaction[]) => {
-    if (!reactions || reactions.length === 0) return null;
-
-    return (
-      <View style={styles.reactionsContainer}>
-        {reactions.map((reaction, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.reactionBubble,
-              {
-                backgroundColor: reaction.users.includes(currentUserId)
-                  ? isDarkMode
-                    ? "#0084FF"
-                    : "#007AFF"
-                  : isDarkMode
-                  ? "#2A2A2A"
-                  : "#F0F0F0",
-              },
-            ]}
-            onPress={() => addReaction(selectedMessage || "", reaction.emoji)}
-          >
-            <Text style={styles.reactionEmoji}>{reaction.emoji}</Text>
-            <Text
-              style={[
-                styles.reactionCount,
-                {
-                  color: reaction.users.includes(currentUserId)
-                    ? "#FFFFFF"
-                    : isDarkMode
-                    ? "#FFFFFF"
-                    : "#000000",
-                },
-              ]}
-            >
-              {reaction.count}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
   };
 
   const renderMessage = ({
@@ -468,7 +367,7 @@ export default function ChatScreen({
           />
         )}
 
-        <TouchableOpacity
+        <View
           style={[
             styles.messageBubble,
             isOwnMessage ? styles.ownMessageBubble : styles.otherMessageBubble,
@@ -487,12 +386,6 @@ export default function ChatScreen({
               borderBottomRightRadius: isOwnMessage && !isConsecutive ? 20 : 8,
             },
           ]}
-          onLongPress={() => {
-            setSelectedMessage(item.id);
-            Vibration.vibrate(50);
-            // Show action menu
-          }}
-          delayLongPress={500}
         >
           {showSenderName && (
             <Text
@@ -593,34 +486,7 @@ export default function ChatScreen({
               />
             )}
           </View>
-        </TouchableOpacity>
-
-        {/* Quick Reaction Buttons */}
-        <View style={styles.quickReactions}>
-          {["❤️", "👍", "😂"].map((emoji) => (
-            <TouchableOpacity
-              key={emoji}
-              style={[
-                styles.quickReactionButton,
-                { backgroundColor: isDarkMode ? "#2A2A2A" : "#F0F0F0" },
-              ]}
-              onPress={() => addReaction(item.id, emoji)}
-            >
-              <Text style={styles.quickReactionEmoji}>{emoji}</Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            style={[
-              styles.quickReactionButton,
-              { backgroundColor: isDarkMode ? "#2A2A2A" : "#F0F0F0" },
-            ]}
-            onPress={() => handleReply(item)}
-          >
-            <Reply size={12} color={isDarkMode ? "#FFFFFF" : "#000000"} />
-          </TouchableOpacity>
         </View>
-
-        {renderReactions(item.reactions || [])}
       </View>
     );
   };
@@ -965,46 +831,6 @@ export default function ChatScreen({
             }}
           />
 
-          {/* Typing Indicator */}
-          {typingUsers.length > 0 && (
-            <View
-              style={[
-                styles.typingIndicator,
-                { backgroundColor: isDarkMode ? "#1A1A1A" : "#F8F9FA" },
-              ]}
-            >
-              <View style={styles.typingDots}>
-                <Animated.View
-                  style={[
-                    styles.typingDot,
-                    { backgroundColor: isDarkMode ? "#666" : "#999" },
-                  ]}
-                />
-                <Animated.View
-                  style={[
-                    styles.typingDot,
-                    { backgroundColor: isDarkMode ? "#666" : "#999" },
-                  ]}
-                />
-                <Animated.View
-                  style={[
-                    styles.typingDot,
-                    { backgroundColor: isDarkMode ? "#666" : "#999" },
-                  ]}
-                />
-              </View>
-              <Text
-                style={[
-                  styles.typingText,
-                  { color: isDarkMode ? "#CCCCCC" : "#666666" },
-                ]}
-              >
-                {typingUsers.join(", ")}{" "}
-                {typingUsers.length === 1 ? "is" : "are"} typing...
-              </Text>
-            </View>
-          )}
-
           {/* Reply Preview */}
           {replyingTo && (
             <View
@@ -1052,70 +878,6 @@ export default function ChatScreen({
             </View>
           )}
 
-          {/* Attachment Options */}
-          {showAttachments && (
-            <View
-              style={[
-                styles.attachmentOptions,
-                { backgroundColor: isDarkMode ? "#1A1A1A" : "#F8F9FA" },
-              ]}
-            >
-              <TouchableOpacity
-                style={[
-                  styles.attachmentOption,
-                  { backgroundColor: isDarkMode ? "#2A2A2A" : "#FFFFFF" },
-                ]}
-              >
-                <Camera size={24} color={isDarkMode ? "#4CAF50" : "#007AFF"} />
-                <Text
-                  style={[
-                    styles.attachmentOptionText,
-                    { color: isDarkMode ? "#FFFFFF" : "#000000" },
-                  ]}
-                >
-                  Camera
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.attachmentOption,
-                  { backgroundColor: isDarkMode ? "#2A2A2A" : "#FFFFFF" },
-                ]}
-              >
-                <MapPin size={24} color={isDarkMode ? "#4CAF50" : "#007AFF"} />
-                <Text
-                  style={[
-                    styles.attachmentOptionText,
-                    { color: isDarkMode ? "#FFFFFF" : "#000000" },
-                  ]}
-                >
-                  Location
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.attachmentOption,
-                  { backgroundColor: isDarkMode ? "#2A2A2A" : "#FFFFFF" },
-                ]}
-              >
-                <Paperclip
-                  size={24}
-                  color={isDarkMode ? "#4CAF50" : "#007AFF"}
-                />
-                <Text
-                  style={[
-                    styles.attachmentOptionText,
-                    { color: isDarkMode ? "#FFFFFF" : "#000000" },
-                  ]}
-                >
-                  File
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
           {/* Enhanced Input */}
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -1130,30 +892,13 @@ export default function ChatScreen({
             ]}
           >
             <View style={styles.inputRow}>
-              {/* Attachment Button */}
-              <TouchableOpacity
-                style={[
-                  styles.attachmentButton,
-                  { backgroundColor: isDarkMode ? "#2A2A2A" : "#F5F5F5" },
-                ]}
-                onPress={() => setShowAttachments(!showAttachments)}
-              >
-                <Plus
-                  size={20}
-                  color={isDarkMode ? "#FFFFFF" : "#666666"}
-                  style={{
-                    transform: [{ rotate: showAttachments ? "45deg" : "0deg" }],
-                  }}
-                />
-              </TouchableOpacity>
-
               <View
                 style={[
                   styles.textInputContainer,
                   {
                     backgroundColor: isDarkMode ? "#2A2A2A" : "#F5F5F5",
                     flex: 1,
-                    marginHorizontal: 8,
+                    marginRight: 8,
                     borderRadius: 24,
                     paddingHorizontal: 16,
                     paddingVertical: 12,
@@ -1164,10 +909,7 @@ export default function ChatScreen({
                 <TextInput
                   ref={inputRef}
                   value={inputText}
-                  onChangeText={(text) => {
-                    setInputText(text);
-                    handleTyping();
-                  }}
+                  onChangeText={setInputText}
                   placeholder="Message..."
                   placeholderTextColor={isDarkMode ? "#666666" : "#888888"}
                   style={[
@@ -1184,17 +926,6 @@ export default function ChatScreen({
                   textAlignVertical="center"
                 />
               </View>
-
-              {/* Emoji Button */}
-              <TouchableOpacity
-                style={[
-                  styles.emojiButton,
-                  { backgroundColor: isDarkMode ? "#2A2A2A" : "#F5F5F5" },
-                ]}
-                onPress={() => setShowEmojiPicker(!showEmojiPicker)}
-              >
-                <Smile size={20} color={isDarkMode ? "#FFFFFF" : "#666666"} />
-              </TouchableOpacity>
 
               {/* Send/Voice Button */}
               <TouchableOpacity
@@ -1620,67 +1351,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 22,
   },
-  reactionsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  reactionBubble: {
-    padding: 8,
-    borderRadius: 16,
-    backgroundColor: "#2A2A2A",
-  },
-  reactionEmoji: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  reactionCount: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  quickReactions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  quickReactionButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  quickReactionEmoji: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
+
   editedText: {
     fontSize: 12,
     fontWeight: "600",
   },
 
   // Enhanced input and interaction styles
-  typingIndicator: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  typingDots: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 8,
-  },
-  typingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginHorizontal: 2,
-  },
-  typingText: {
-    fontSize: 13,
-    fontStyle: "italic",
-  },
 
   replyPreview: {
     paddingHorizontal: 16,
@@ -1713,44 +1390,6 @@ const styles = StyleSheet.create({
   },
   replyPreviewClose: {
     padding: 8,
-  },
-
-  attachmentOptions: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  attachmentOption: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 16,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  attachmentOptionText: {
-    fontSize: 12,
-    fontWeight: "600",
-    marginTop: 8,
-  },
-
-  attachmentButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  emojiButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
   },
 
   // Updated message styles for better spacing

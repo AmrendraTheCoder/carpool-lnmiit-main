@@ -91,6 +91,7 @@ interface StudentCarpoolSystemProps {
   };
   onCreateRide?: () => void;
   onJoinRide?: (rideId: string) => void;
+  onShowBusBooking?: () => void;
   onToggleSidebar?: () => void;
 }
 
@@ -107,6 +108,7 @@ const StudentCarpoolSystem = ({
   },
   onCreateRide = () => {},
   onJoinRide = () => {},
+  onShowBusBooking = () => {},
   onToggleSidebar = () => {},
 }: StudentCarpoolSystemProps) => {
   const [rides, setRides] = useState<CarpoolRide[]>([]);

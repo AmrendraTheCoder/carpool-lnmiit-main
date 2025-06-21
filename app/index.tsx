@@ -5,6 +5,7 @@ import {
   useColorScheme,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -318,12 +319,15 @@ const AppContent = () => {
                       `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
                   }}
                   onCreateRide={() => {
-                    // TODO: Navigate to create ride screen
                     console.log("Create ride from StudentCarpool");
+                    // Navigate to create ride functionality
                   }}
                   onJoinRide={(rideId) => {
-                    // TODO: Handle ride join logic
                     console.log("Join ride:", rideId);
+                    // Handle ride join logic
+                  }}
+                  onShowBusBooking={() => {
+                    setIndex(1); // Switch to bus booking tab
                   }}
                   onToggleSidebar={toggleSidebar}
                 />
@@ -654,11 +658,50 @@ const AppContent = () => {
                       </Text>
 
                       {[
-                        { icon: "🚗", label: "Create Ride", action: () => {} },
-                        { icon: "📍", label: "Saved Places", action: () => {} },
-                        { icon: "🕒", label: "Recent Trips", action: () => {} },
-                        { icon: "⭐", label: "Favorites", action: () => {} },
-                        { icon: "⚙️", label: "Settings", action: () => {} },
+                        {
+                          icon: "🚗",
+                          label: "Create Ride",
+                          action: () => {
+                            setSidebarVisible(false);
+                            // TODO: Navigate to create ride
+                            Alert.alert(
+                              "Create Ride",
+                              "Opening create ride screen..."
+                            );
+                          },
+                        },
+                        {
+                          icon: "🚌",
+                          label: "Bus Booking",
+                          action: () => {
+                            setSidebarVisible(false);
+                            setIndex(1); // Switch to bus booking tab
+                          },
+                        },
+                        {
+                          icon: "📍",
+                          label: "Saved Places",
+                          action: () => {
+                            setSidebarVisible(false);
+                            Alert.alert("Saved Places", "Feature coming soon!");
+                          },
+                        },
+                        {
+                          icon: "🕒",
+                          label: "Recent Trips",
+                          action: () => {
+                            setSidebarVisible(false);
+                            Alert.alert("Recent Trips", "Feature coming soon!");
+                          },
+                        },
+                        {
+                          icon: "⚙️",
+                          label: "Settings",
+                          action: () => {
+                            setSidebarVisible(false);
+                            Alert.alert("Settings", "Feature coming soon!");
+                          },
+                        },
                       ].map((item, index) => (
                         <TouchableOpacity
                           key={index}
