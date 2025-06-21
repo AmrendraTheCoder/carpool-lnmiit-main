@@ -232,15 +232,10 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                 <Text style={styles.logoText}>L</Text>
               </LinearGradient>
 
-              <Text style={[styles.title, { color: theme.colors.onSurface }]}>
+              <Text style={[styles.title, { color: "#FFFFFF" }]}>
                 {isLogin ? "Welcome back!" : "Join LNMIIT Carpool"}
               </Text>
-              <Text
-                style={[
-                  styles.subtitle,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
-              >
+              <Text style={[styles.subtitle, { color: "#E0E0E0" }]}>
                 {isLogin
                   ? "Sign in to continue your journey"
                   : "Create your account to start sharing rides"}
@@ -257,17 +252,10 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                 }
                 style={styles.demoCardGradient}
               >
-                <Text
-                  style={[styles.demoTitle, { color: theme.colors.onSurface }]}
-                >
+                <Text style={[styles.demoTitle, { color: "#FFFFFF" }]}>
                   🚀 Quick Demo Access
                 </Text>
-                <Text
-                  style={[
-                    styles.demoSubtitle,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
+                <Text style={[styles.demoSubtitle, { color: "#E0E0E0" }]}>
                   Try the app instantly with demo credentials
                 </Text>
 
@@ -386,12 +374,7 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
 
               {!isLogin && (
                 <View style={styles.roleSelection}>
-                  <Text
-                    style={[
-                      styles.roleTitle,
-                      { color: theme.colors.onSurface },
-                    ]}
-                  >
+                  <Text style={[styles.roleTitle, { color: "#FFFFFF" }]}>
                     I want to
                   </Text>
                   <View style={styles.roleButtons}>

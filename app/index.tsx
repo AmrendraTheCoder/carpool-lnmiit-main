@@ -3,6 +3,7 @@ import { View, StyleSheet, useColorScheme } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   Surface,
   Text,
@@ -279,32 +280,23 @@ function AppContent() {
       <SafeAreaView style={styles.container} edges={["top"]}>
         <Animated.View style={[styles.container, animatedContainerStyle]}>
           {/* Modern Header */}
-          <View
+          <LinearGradient
+            colors={["#1A1A1A", "#2A2A2A"]}
             style={[
               styles.headerContainer,
               {
-                backgroundColor: "#1A1A1A", // Always dark header
                 borderBottomColor: isDarkMode ? "#333333" : "#E0E0E0",
               },
             ]}
           >
             <View style={styles.headerContent}>
               <View style={styles.headerLeft}>
-                <View
-                  style={[
-                    styles.logoContainer,
-                    { backgroundColor: "#FFFFFF" }, // Always white logo background
-                  ]}
+                <LinearGradient
+                  colors={["#6366f1", "#8b5cf6"]}
+                  style={styles.logoContainer}
                 >
-                  <Text
-                    style={[
-                      styles.logoText,
-                      { color: "#000000" }, // Always black text in logo
-                    ]}
-                  >
-                    L
-                  </Text>
-                </View>
+                  <Text style={styles.logoText}>L</Text>
+                </LinearGradient>
                 <View style={styles.titleContainer}>
                   <Text style={styles.headerTitle}>LNMIIT</Text>
                   <Text style={styles.headerSubtitle}>
@@ -320,35 +312,40 @@ function AppContent() {
                   icon={
                     isDarkMode ? "white-balance-sunny" : "moon-waning-crescent"
                   }
-                  size={20}
+                  size={22}
                   iconColor="#FFFFFF"
                   onPress={() => setIsDarkMode(!isDarkMode)}
                   style={[
                     styles.iconButton,
-                    { backgroundColor: "rgba(255,255,255,0.1)" },
+                    { backgroundColor: "rgba(255,255,255,0.15)" },
                   ]}
                 />
                 <IconButton
                   icon="bell-outline"
-                  size={20}
+                  size={22}
                   iconColor="#FFFFFF"
                   style={[
                     styles.iconButton,
-                    { backgroundColor: "rgba(255,255,255,0.1)" },
+                    { backgroundColor: "rgba(255,255,255,0.15)" },
                   ]}
                 />
-                <Avatar.Image
-                  size={36}
-                  source={{
-                    uri:
-                      user.profilePicture ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-                  }}
-                  style={styles.avatar}
-                />
+                <LinearGradient
+                  colors={["#6366f1", "#8b5cf6"]}
+                  style={styles.avatarGradient}
+                >
+                  <Avatar.Image
+                    size={32}
+                    source={{
+                      uri:
+                        user.profilePicture ||
+                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+                    }}
+                    style={styles.avatar}
+                  />
+                </LinearGradient>
               </View>
             </View>
-          </View>
+          </LinearGradient>
 
           {/* Content with Bottom Navigation */}
           <View style={styles.content}>
@@ -424,6 +421,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 20,
     fontWeight: "900",
+    color: "#FFFFFF",
   },
   titleContainer: {
     justifyContent: "center",
@@ -448,9 +446,13 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   avatar: {
-    marginLeft: 4,
     borderWidth: 2,
     borderColor: "#FFFFFF",
+  },
+  avatarGradient: {
+    borderRadius: 20,
+    padding: 2,
+    marginLeft: 4,
   },
   content: {
     flex: 1,
