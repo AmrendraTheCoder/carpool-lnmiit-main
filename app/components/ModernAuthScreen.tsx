@@ -42,7 +42,7 @@ interface ModernAuthScreenProps {
   onAuthenticated: (
     email: string,
     password: string,
-    role: "driver" | "passenger"
+    role: "driver" | "passenger" | "external_driver"
   ) => void;
   isDarkMode?: boolean;
 }
@@ -60,9 +60,9 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [selectedRole, setSelectedRole] = useState<"driver" | "passenger">(
-    "passenger"
-  );
+  const [selectedRole, setSelectedRole] = useState<
+    "driver" | "passenger" | "external_driver"
+  >("passenger");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -132,7 +132,8 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
     const isDemoLogin =
       (email === "demo@lnmiit.ac.in" && password === "demo123") ||
       (email === "21UCS045@lnmiit.ac.in" && password === "student123") ||
-      (email === "21UME023@lnmiit.ac.in" && password === "driver123");
+      (email === "21UME023@lnmiit.ac.in" && password === "driver123") ||
+      (email === "rajesh.driver@gmail.com" && password === "driver123");
 
     if (!isDemoLogin && !validateEmail(email)) {
       setEmailError(
@@ -171,9 +172,11 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Auto-assign role based on demo credentials
-      let role: "driver" | "passenger" = selectedRole;
+      let role: "driver" | "passenger" | "external_driver" = selectedRole;
       if (email === "21UME023@lnmiit.ac.in") {
         role = "driver";
+      } else if (email === "rajesh.driver@gmail.com") {
+        role = "external_driver";
       } else if (
         email === "21UCS045@lnmiit.ac.in" ||
         email === "demo@lnmiit.ac.in"
@@ -189,7 +192,9 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
     }
   };
 
-  const fillDemoCredentials = (type: "student" | "driver" | "demo") => {
+  const fillDemoCredentials = (
+    type: "student" | "driver" | "demo" | "external_driver"
+  ) => {
     switch (type) {
       case "demo":
         setEmail("demo@lnmiit.ac.in");
@@ -205,6 +210,11 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
         setEmail("21UME023@lnmiit.ac.in");
         setPassword("driver123");
         setSelectedRole("driver");
+        break;
+      case "external_driver":
+        setEmail("rajesh.driver@gmail.com");
+        setPassword("driver123");
+        setSelectedRole("external_driver");
         break;
     }
   };
@@ -273,8 +283,14 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                     size="small"
                   />
                   <Button
-                    title="Driver"
+                    title="Student Driver"
                     onPress={() => fillDemoCredentials("driver")}
+                    variant="outline"
+                    size="small"
+                  />
+                  <Button
+                    title="Pro Driver"
+                    onPress={() => fillDemoCredentials("external_driver")}
                     variant="outline"
                     size="small"
                   />
@@ -369,7 +385,15 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                   </Text>
                   <View style={styles.roleButtons}>
                     <Button
-                      title="🚗 Drive & Share"
+                      title="🧳 Find Rides"
+                      onPress={() => setSelectedRole("passenger")}
+                      variant={
+                        selectedRole === "passenger" ? "primary" : "outline"
+                      }
+                      style={styles.roleButton}
+                    />
+                    <Button
+                      title="🚗 Student Driver"
                       onPress={() => setSelectedRole("driver")}
                       variant={
                         selectedRole === "driver" ? "primary" : "outline"
@@ -377,10 +401,12 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                       style={styles.roleButton}
                     />
                     <Button
-                      title="🧳 Find Rides"
-                      onPress={() => setSelectedRole("passenger")}
+                      title="🚕 Pro Driver"
+                      onPress={() => setSelectedRole("external_driver")}
                       variant={
-                        selectedRole === "passenger" ? "primary" : "outline"
+                        selectedRole === "external_driver"
+                          ? "primary"
+                          : "outline"
                       }
                       style={styles.roleButton}
                     />

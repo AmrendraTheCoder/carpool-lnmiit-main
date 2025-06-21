@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, useColorScheme } from "react-native";
+import { View, StyleSheet, useColorScheme, Alert } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -36,9 +36,10 @@ import {
 // Import new components
 import LoadingScreen from "./components/LoadingScreen";
 import ModernAuthScreen from "./components/ModernAuthScreen";
-import UberStyleHome from "./components/UberStyleHome";
+import StudentCarpoolSystem from "./components/StudentCarpoolSystem";
 import BusBookingSystem from "./components/BusBookingSystem";
 import UserProfileSafety from "./components/UserProfileSafety";
+import DriverDashboard from "./components/DriverDashboard";
 
 // Custom theme colors - Pure Black & White
 const lightTheme = {
@@ -98,6 +99,11 @@ const DEMO_CREDENTIALS = {
     password: "driver123",
     role: "driver" as const,
   },
+  external_driver: {
+    email: "rajesh.driver@gmail.com",
+    password: "driver123",
+    role: "external_driver" as const,
+  },
 };
 
 // Mock user authentication state
@@ -119,33 +125,56 @@ const useAuth = () => {
   const login = (
     email: string,
     password: string,
-    role: "driver" | "passenger"
+    role: "driver" | "passenger" | "external_driver"
   ) => {
     // Create user object based on credentials
     const isDemo = email === "demo@lnmiit.ac.in";
     const isStudent = email === "21UCS045@lnmiit.ac.in";
     const isDriver = email === "21UME023@lnmiit.ac.in";
+    const isExternalDriver = email === "rajesh.driver@gmail.com";
 
     const userData = {
-      id: isDemo ? "demo-1" : isStudent ? "student-1" : "driver-1",
+      id: isDemo
+        ? "demo-1"
+        : isStudent
+        ? "student-1"
+        : isDriver
+        ? "driver-1"
+        : "ext-driver-1",
       email,
       role,
-      name: isDemo ? "Demo User" : isStudent ? "Arjun Sharma" : "Priya Gupta",
+      name: isDemo
+        ? "Demo User"
+        : isStudent
+        ? "Arjun Sharma"
+        : isDriver
+        ? "Priya Gupta"
+        : "Rajesh Kumar",
       profilePicture: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
       phone: isDemo
         ? "+91 99999 00000"
         : isStudent
         ? "+91 98765 43210"
-        : "+91 87654 32109",
+        : isDriver
+        ? "+91 87654 32109"
+        : "+91 98765 43210",
       branch: isStudent
         ? "Computer Science"
         : isDriver
         ? "Mechanical Engineering"
+        : isExternalDriver
+        ? "Professional Driver"
         : "Demo",
-      year: isStudent ? "3rd Year" : isDriver ? "4th Year" : "Demo",
-      rating: isDriver ? 4.8 : 4.5,
+      year: isStudent
+        ? "3rd Year"
+        : isDriver
+        ? "4th Year"
+        : isExternalDriver
+        ? "5+ years experience"
+        : "Demo",
+      rating: isDriver || isExternalDriver ? 4.8 : 4.5,
       isVerified: true,
-      ridesCompleted: isDriver ? 125 : 87,
+      ridesCompleted: isDriver || isExternalDriver ? 245 : 87,
       emergencyContacts: [
         {
           id: "1",
@@ -195,8 +224,8 @@ function AppContent() {
 
   const [routes] = useState([
     {
-      key: "rides",
-      title: "Rides",
+      key: "carpool",
+      title: "Carpool",
       focusedIcon: "car",
       unfocusedIcon: "car-outline",
     },
@@ -247,29 +276,6 @@ function AppContent() {
     return <ModernAuthScreen onAuthenticated={login} isDarkMode={isDarkMode} />;
   }
 
-  const renderScene = BottomNavigation.SceneMap({
-    rides: () => (
-      <UberStyleHome
-        user={user}
-        isDarkMode={isDarkMode}
-        onLocationSelect={(location) => {
-          // Location selected
-        }}
-        onServiceSelect={(service) => {
-          // Service selected
-        }}
-      />
-    ),
-    bus: () => <BusBookingSystem isDarkMode={isDarkMode} />,
-    profile: () => (
-      <UserProfileSafety
-        user={user}
-        onLogout={logout}
-        isDarkMode={isDarkMode}
-      />
-    ),
-  });
-
   return (
     <View style={styles.safeArea}>
       <StatusBar
@@ -300,9 +306,9 @@ function AppContent() {
                 <View style={styles.titleContainer}>
                   <Text style={styles.headerTitle}>LNMIIT</Text>
                   <Text style={styles.headerSubtitle}>
-                    {user.role === "driver"
+                    {user.role === "external_driver"
                       ? "Driver Dashboard"
-                      : "Carpool & Bus"}
+                      : "Student Carpool"}
                   </Text>
                 </View>
               </View>
@@ -352,25 +358,62 @@ function AppContent() {
             {/* Main Content */}
             <View style={styles.sceneContainer}>
               {index === 0 && (
-                <UberStyleHome
-                  user={user}
+                <StudentCarpoolSystem
                   isDarkMode={isDarkMode}
-                  onLocationSelect={(location) => {
-                    // Location selected
+                  currentUser={{
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    branch: user.branch,
+                    year: user.year,
+                    rating: user.rating,
                   }}
-                  onServiceSelect={(service) => {
-                    // Service selected
-                  }}
+                  onCreateRide={() =>
+                    Alert.alert(
+                      "Create Ride",
+                      "Create ride feature coming soon!"
+                    )
+                  }
+                  onJoinRide={(rideId) =>
+                    Alert.alert("Join Ride", `Joining ride ${rideId}...`)
+                  }
                 />
               )}
               {index === 1 && <BusBookingSystem isDarkMode={isDarkMode} />}
-              {index === 2 && (
-                <UserProfileSafety
-                  user={user}
-                  onLogout={logout}
-                  isDarkMode={isDarkMode}
-                />
-              )}
+              {index === 2 &&
+                (user.role === "external_driver" ? (
+                  <DriverDashboard
+                    isDarkMode={isDarkMode}
+                    driver={{
+                      id: user.id,
+                      name: user.name,
+                      phone: user.phone,
+                      verificationStatus: "approved",
+                      rating: user.rating,
+                      totalRides: user.ridesCompleted,
+                      monthlyEarnings: 8500,
+                      performanceScore: 92,
+                      vehicleInfo: {
+                        make: "Maruti",
+                        model: "Swift Dzire",
+                        licensePlate: "RJ14 CA 1234",
+                        isAC: true,
+                      },
+                      currentRide: {
+                        pickupLocation: "LNMIIT Campus",
+                        destination: "Jaipur Railway Station",
+                        passengers: 3,
+                        fare: 120,
+                      },
+                    }}
+                  />
+                ) : (
+                  <UserProfileSafety
+                    user={user}
+                    onLogout={logout}
+                    isDarkMode={isDarkMode}
+                  />
+                ))}
             </View>
 
             {/* Custom Bottom Navigation */}
@@ -378,8 +421,8 @@ function AppContent() {
               style={[
                 styles.bottomNavContainer,
                 {
-                  backgroundColor: isDarkMode ? "#000000" : "#FFFFFF",
-                  borderTopColor: isDarkMode ? "#333333" : "#E0E0E0",
+                  backgroundColor: "transparent",
+                  borderTopColor: "transparent",
                 },
               ]}
             >
@@ -528,30 +571,32 @@ const styles = StyleSheet.create({
   },
   bottomNavContainer: {
     flexDirection: "row",
-    borderTopWidth: 1,
-    paddingVertical: 12,
+    borderTopWidth: 0,
+    paddingVertical: 8,
     paddingHorizontal: 8,
-    paddingBottom: 16,
-    marginBottom: 6,
+    paddingBottom: 12,
+    marginBottom: 0,
   },
   tabItem: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 8,
+    paddingVertical: 12,
     paddingHorizontal: 8,
-    minHeight: 64,
+    minHeight: 60,
   },
   activeTabItem: {
     // No extra styling for active state - keep it simple
   },
   tabButton: {
     margin: 0,
+    padding: 4,
     backgroundColor: "transparent",
   },
   tabLabel: {
     fontSize: 11,
-    marginTop: 2,
+    marginTop: 4,
     textAlign: "center",
+    fontWeight: "500",
   },
 });
