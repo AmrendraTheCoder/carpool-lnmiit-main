@@ -9,18 +9,34 @@ import {
   Alert,
   Platform,
   Modal,
+  StyleSheet,
+  Switch,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import {
+  ArrowLeft,
+  MapPin,
+  Clock,
+  Users,
+  DollarSign,
+  Car,
+  Check,
+  X,
+  Calendar,
+  Settings,
+} from "lucide-react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 interface CreateRideScreenProps {
   onBack: () => void;
   onRideCreated: (rideData: any) => void;
+  isDarkMode?: boolean;
 }
 
 export default function CreateRideScreen({
   onBack,
   onRideCreated,
+  isDarkMode = false,
 }: CreateRideScreenProps) {
   const [formData, setFormData] = useState({
     from: "",
@@ -44,6 +60,22 @@ export default function CreateRideScreen({
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Popular LNMIIT locations
+  const popularLocations = [
+    "LNMIIT Main Gate",
+    "LNMIIT Campus",
+    "Jaipur Railway Station",
+    "Jaipur Airport",
+    "City Mall",
+    "World Trade Park",
+    "Mahindra SEZ",
+    "Sitapura",
+    "C-Scheme",
+    "Vaishali Nagar",
+    "Malviya Nagar",
+    "Tonk Road",
+  ];
+
   const handleCreateRide = async () => {
     // Validation
     if (
@@ -62,29 +94,40 @@ export default function CreateRideScreen({
     try {
       // Create ride data
       const rideData = {
-        id: Date.now().toString(),
+        id: `ride_${Date.now()}`,
+        driverId: "current_user",
+        driverName: "You",
+        driverRating: 4.8,
+        driverPhoto:
+          "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
+        driverBranch: "Computer Science",
+        driverYear: "3rd Year",
         from: formData.from,
         to: formData.to,
-        date: formData.date,
-        time: formData.time,
+        departureTime: formData.time.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        date: formData.date.toISOString().split("T")[0],
         availableSeats: parseInt(formData.availableSeats),
         totalSeats: parseInt(formData.availableSeats),
         pricePerSeat: parseFloat(formData.pricePerSeat),
-        carModel: formData.carModel,
-        carNumber: formData.carNumber,
-        description: formData.description,
-        preferences: formData.preferences,
-        driver: {
-          id: "current_user",
-          name: "You",
-          rating: 4.8,
-          phone: "+91 9876543210",
-          photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=currentuser",
-          verified: true,
+        vehicleInfo: {
+          make: formData.carModel.split(" ")[0] || "Car",
+          model: formData.carModel.split(" ").slice(1).join(" ") || "Model",
+          color: "White",
+          isAC: formData.preferences.airConditioning,
         },
+        route: [formData.from, formData.to],
+        preferences: {
+          gender: "any" as const,
+          smokingAllowed: formData.preferences.smoking,
+          musicAllowed: formData.preferences.music,
+          petsAllowed: formData.preferences.pets,
+        },
+        status: "active" as const,
         passengers: [],
-        status: "active",
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
       };
 
       // Simulate API call
@@ -129,533 +172,794 @@ export default function CreateRideScreen({
     });
   };
 
+  const updateFormData = (field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updatePreference = (pref: string, value: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      preferences: { ...prev.preferences, [pref]: value },
+    }));
+  };
+
+  const renderInput = (
+    placeholder: string,
+    value: string,
+    onChangeText: (text: string) => void,
+    icon: React.ReactNode,
+    keyboardType: any = "default",
+    multiline = false
+  ) => (
+    <View
+      style={[
+        styles.inputContainer,
+        { backgroundColor: isDarkMode ? "#1A1A1A" : "#F8F9FA" },
+      ]}
+    >
+      <View style={styles.inputIcon}>{icon}</View>
+      <TextInput
+        style={[
+          styles.textInput,
+          {
+            color: isDarkMode ? "#FFFFFF" : "#000000",
+            textAlignVertical: multiline ? "top" : "center",
+            height: multiline ? 80 : 50,
+          },
+        ]}
+        placeholder={placeholder}
+        placeholderTextColor={isDarkMode ? "#666666" : "#999999"}
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType={keyboardType}
+        multiline={multiline}
+      />
+    </View>
+  );
+
+  const renderLocationButton = (
+    location: string,
+    isSelected: boolean,
+    onPress: () => void
+  ) => (
+    <TouchableOpacity
+      key={location}
+      style={[
+        styles.locationChip,
+        {
+          backgroundColor: isSelected
+            ? isDarkMode
+              ? "#FFFFFF"
+              : "#000000"
+            : isDarkMode
+            ? "#2A2A2A"
+            : "#F0F0F0",
+          borderColor: isSelected
+            ? isDarkMode
+              ? "#FFFFFF"
+              : "#000000"
+            : "transparent",
+        },
+      ]}
+      onPress={onPress}
+    >
+      <Text
+        style={[
+          styles.locationChipText,
+          {
+            color: isSelected
+              ? isDarkMode
+                ? "#000000"
+                : "#FFFFFF"
+              : isDarkMode
+              ? "#FFFFFF"
+              : "#000000",
+          },
+        ]}
+      >
+        {location}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <Modal visible={true} animationType="slide" presentationStyle="fullScreen">
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
-        {/* Header */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 20,
-            paddingVertical: 16,
-            backgroundColor: "#1A1A1A",
-            borderBottomWidth: 1,
-            borderBottomColor: "#E0E0E0",
-          }}
-        >
-          <TouchableOpacity
-            onPress={onBack}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: "rgba(255,255,255,0.1)",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 16,
-            }}
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: isDarkMode ? "#000000" : "#FFFFFF" },
+        ]}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          {/* Header */}
+          <LinearGradient
+            colors={
+              isDarkMode ? ["#000000", "#1A1A1A"] : ["#FFFFFF", "#F8F9FA"]
+            }
+            style={styles.header}
           >
-            <Ionicons name="arrow-back" size={20} color="#FFF" />
-          </TouchableOpacity>
-
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: "600",
-              color: "#FFF",
-              flex: 1,
-            }}
-          >
-            Create New Ride
-          </Text>
-        </View>
-
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Route Section */}
-          <View style={{ padding: 20 }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "600",
-                color: "#000",
-                marginBottom: 16,
-              }}
+            <TouchableOpacity
+              onPress={onBack}
+              style={[
+                styles.backButton,
+                {
+                  backgroundColor: isDarkMode
+                    ? "rgba(255,255,255,0.1)"
+                    : "rgba(0,0,0,0.1)",
+                },
+              ]}
             >
-              Route Details
+              <ArrowLeft size={20} color={isDarkMode ? "#FFFFFF" : "#000000"} />
+            </TouchableOpacity>
+
+            <Text
+              style={[
+                styles.headerTitle,
+                { color: isDarkMode ? "#FFFFFF" : "#000000" },
+              ]}
+            >
+              Create New Ride
             </Text>
 
-            <View style={{ marginBottom: 16 }}>
+            <View style={styles.headerSpacer} />
+          </LinearGradient>
+
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Route Section */}
+            <View
+              style={[
+                styles.section,
+                styles.routeSection,
+                { borderLeftColor: isDarkMode ? "#4CAF50" : "#2E7D32" },
+              ]}
+            >
               <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "500",
-                  color: "#666",
-                  marginBottom: 8,
-                }}
+                style={[
+                  styles.sectionTitle,
+                  { color: isDarkMode ? "#4CAF50" : "#2E7D32" },
+                ]}
+              >
+                📍 Route Details
+              </Text>
+
+              <Text
+                style={[
+                  styles.fieldLabel,
+                  { color: isDarkMode ? "#CCCCCC" : "#666666" },
+                ]}
               >
                 From *
               </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: "#F5F5F5",
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                }}
-              >
-                <Ionicons
-                  name="location"
-                  size={20}
-                  color="#666"
-                  style={{ marginRight: 12 }}
-                />
-                <TextInput
-                  value={formData.from}
-                  onChangeText={(text) =>
-                    setFormData((prev) => ({ ...prev, from: text }))
-                  }
-                  placeholder="Pickup location"
-                  placeholderTextColor="#999"
-                  style={{ flex: 1, fontSize: 16, color: "#000" }}
-                />
-              </View>
-            </View>
+              {renderInput(
+                "Enter pickup location",
+                formData.from,
+                (text) => updateFormData("from", text),
+                <MapPin size={20} color={isDarkMode ? "#666666" : "#999999"} />
+              )}
 
-            <View style={{ marginBottom: 16 }}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.locationChipsContainer}
+              >
+                {popularLocations.map((location) =>
+                  renderLocationButton(
+                    location,
+                    formData.from === location,
+                    () => updateFormData("from", location)
+                  )
+                )}
+              </ScrollView>
+
               <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "500",
-                  color: "#666",
-                  marginBottom: 8,
-                }}
+                style={[
+                  styles.fieldLabel,
+                  { color: isDarkMode ? "#CCCCCC" : "#666666" },
+                ]}
               >
                 To *
               </Text>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: "#F5F5F5",
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                }}
+              {renderInput(
+                "Enter destination",
+                formData.to,
+                (text) => updateFormData("to", text),
+                <MapPin size={20} color={isDarkMode ? "#666666" : "#999999"} />
+              )}
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.locationChipsContainer}
               >
-                <Ionicons
-                  name="flag"
-                  size={20}
-                  color="#666"
-                  style={{ marginRight: 12 }}
-                />
-                <TextInput
-                  value={formData.to}
-                  onChangeText={(text) =>
-                    setFormData((prev) => ({ ...prev, to: text }))
-                  }
-                  placeholder="Destination"
-                  placeholderTextColor="#999"
-                  style={{ flex: 1, fontSize: 16, color: "#000" }}
-                />
-              </View>
+                {popularLocations.map((location) =>
+                  renderLocationButton(location, formData.to === location, () =>
+                    updateFormData("to", location)
+                  )
+                )}
+              </ScrollView>
             </View>
 
-            {/* Date and Time */}
-            <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "500",
-                    color: "#666",
-                    marginBottom: 8,
-                  }}
-                >
-                  Date *
-                </Text>
+            {/* Date & Time Section */}
+            <View
+              style={[
+                styles.section,
+                styles.scheduleSection,
+                { borderLeftColor: isDarkMode ? "#FF9800" : "#F57C00" },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: isDarkMode ? "#FF9800" : "#F57C00" },
+                ]}
+              >
+                🕒 Schedule
+              </Text>
+
+              <Text
+                style={[
+                  styles.fieldLabel,
+                  { color: isDarkMode ? "#CCCCCC" : "#666666" },
+                ]}
+              >
+                Select Date & Time *
+              </Text>
+
+              <View style={styles.dateTimeContainer}>
                 <TouchableOpacity
+                  style={[
+                    styles.dateTimeButton,
+                    {
+                      backgroundColor: isDarkMode ? "#2A2A2A" : "#F8F9FA",
+                      borderColor: isDarkMode ? "#FF9800" : "#F57C00",
+                      borderWidth: 1,
+                    },
+                  ]}
                   onPress={() => setShowDatePicker(true)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                  }}
                 >
-                  <Ionicons
-                    name="calendar"
+                  <Calendar
                     size={20}
-                    color="#666"
-                    style={{ marginRight: 12 }}
+                    color={isDarkMode ? "#FF9800" : "#F57C00"}
                   />
-                  <Text style={{ fontSize: 16, color: "#000" }}>
+                  <Text
+                    style={[
+                      styles.dateTimeText,
+                      { color: isDarkMode ? "#FFFFFF" : "#000000" },
+                    ]}
+                  >
                     {formatDate(formData.date)}
                   </Text>
                 </TouchableOpacity>
-              </View>
 
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "500",
-                    color: "#666",
-                    marginBottom: 8,
-                  }}
-                >
-                  Time *
-                </Text>
                 <TouchableOpacity
+                  style={[
+                    styles.dateTimeButton,
+                    {
+                      backgroundColor: isDarkMode ? "#2A2A2A" : "#F8F9FA",
+                      borderColor: isDarkMode ? "#FF9800" : "#F57C00",
+                      borderWidth: 1,
+                    },
+                  ]}
                   onPress={() => setShowTimePicker(true)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                  }}
                 >
-                  <Ionicons
-                    name="time"
-                    size={20}
-                    color="#666"
-                    style={{ marginRight: 12 }}
-                  />
-                  <Text style={{ fontSize: 16, color: "#000" }}>
+                  <Clock size={20} color={isDarkMode ? "#FF9800" : "#F57C00"} />
+                  <Text
+                    style={[
+                      styles.dateTimeText,
+                      { color: isDarkMode ? "#FFFFFF" : "#000000" },
+                    ]}
+                  >
                     {formatTime(formData.time)}
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
 
-          {/* Ride Details */}
-          <View style={{ padding: 20, paddingTop: 0 }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "600",
-                color: "#000",
-                marginBottom: 16,
-              }}
+            {/* Ride Details Section */}
+            <View
+              style={[
+                styles.section,
+                styles.rideSection,
+                { borderLeftColor: isDarkMode ? "#2196F3" : "#1976D2" },
+              ]}
             >
-              Ride Details
-            </Text>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: isDarkMode ? "#2196F3" : "#1976D2" },
+                ]}
+              >
+                🚗 Ride Details
+              </Text>
 
-            <View style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "500",
-                    color: "#666",
-                    marginBottom: 8,
-                  }}
-                >
-                  Available Seats *
-                </Text>
-                <View
-                  style={{
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                  }}
-                >
-                  <TextInput
-                    value={formData.availableSeats}
-                    onChangeText={(text) =>
-                      setFormData((prev) => ({ ...prev, availableSeats: text }))
-                    }
-                    placeholder="3"
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    style={{ fontSize: 16, color: "#000", textAlign: "center" }}
-                  />
-                </View>
+              <Text
+                style={[
+                  styles.fieldLabel,
+                  { color: isDarkMode ? "#CCCCCC" : "#666666" },
+                ]}
+              >
+                Available Seats *
+              </Text>
+              <View style={styles.seatsContainer}>
+                {["1", "2", "3", "4"].map((seat) => (
+                  <TouchableOpacity
+                    key={seat}
+                    style={[
+                      styles.seatButton,
+                      {
+                        backgroundColor:
+                          formData.availableSeats === seat
+                            ? isDarkMode
+                              ? "#FFFFFF"
+                              : "#000000"
+                            : isDarkMode
+                            ? "#1A1A1A"
+                            : "#F8F9FA",
+                      },
+                    ]}
+                    onPress={() => updateFormData("availableSeats", seat)}
+                  >
+                    <Users
+                      size={16}
+                      color={
+                        formData.availableSeats === seat
+                          ? isDarkMode
+                            ? "#000000"
+                            : "#FFFFFF"
+                          : isDarkMode
+                          ? "#666666"
+                          : "#999999"
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.seatButtonText,
+                        {
+                          color:
+                            formData.availableSeats === seat
+                              ? isDarkMode
+                                ? "#000000"
+                                : "#FFFFFF"
+                              : isDarkMode
+                              ? "#666666"
+                              : "#999999",
+                        },
+                      ]}
+                    >
+                      {seat}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </View>
 
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "500",
-                    color: "#666",
-                    marginBottom: 8,
-                  }}
-                >
-                  Price per Seat *
-                </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 12,
-                    paddingHorizontal: 16,
-                    paddingVertical: 12,
-                  }}
-                >
-                  <Text style={{ fontSize: 16, color: "#666", marginRight: 8 }}>
-                    ₹
-                  </Text>
-                  <TextInput
-                    value={formData.pricePerSeat}
-                    onChangeText={(text) =>
-                      setFormData((prev) => ({ ...prev, pricePerSeat: text }))
-                    }
-                    placeholder="150"
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                    style={{ flex: 1, fontSize: 16, color: "#000" }}
-                  />
-                </View>
-              </View>
+              <Text
+                style={[
+                  styles.fieldLabel,
+                  { color: isDarkMode ? "#CCCCCC" : "#666666" },
+                ]}
+              >
+                Price per Seat (₹) *
+              </Text>
+              {renderInput(
+                "Enter amount (e.g., 120)",
+                formData.pricePerSeat,
+                (text) => updateFormData("pricePerSeat", text),
+                <DollarSign
+                  size={20}
+                  color={isDarkMode ? "#666666" : "#999999"}
+                />,
+                "numeric"
+              )}
             </View>
 
-            {/* Car Details */}
-            <View style={{ marginBottom: 16 }}>
+            {/* Vehicle Section */}
+            <View
+              style={[
+                styles.section,
+                styles.vehicleSection,
+                { borderLeftColor: isDarkMode ? "#9C27B0" : "#7B1FA2" },
+              ]}
+            >
               <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "500",
-                  color: "#666",
-                  marginBottom: 8,
-                }}
+                style={[
+                  styles.sectionTitle,
+                  { color: isDarkMode ? "#9C27B0" : "#7B1FA2" },
+                ]}
+              >
+                🚙 Vehicle Information
+              </Text>
+
+              <Text
+                style={[
+                  styles.fieldLabel,
+                  { color: isDarkMode ? "#CCCCCC" : "#666666" },
+                ]}
               >
                 Car Model *
               </Text>
-              <TextInput
-                value={formData.carModel}
-                onChangeText={(text) =>
-                  setFormData((prev) => ({ ...prev, carModel: text }))
-                }
-                placeholder="e.g., Maruti Swift"
-                placeholderTextColor="#999"
-                style={{
-                  backgroundColor: "#F5F5F5",
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  fontSize: 16,
-                  color: "#000",
-                }}
-              />
-            </View>
+              {renderInput(
+                "e.g., Hyundai i20",
+                formData.carModel,
+                (text) => updateFormData("carModel", text),
+                <Car size={20} color={isDarkMode ? "#666666" : "#999999"} />
+              )}
 
-            <View style={{ marginBottom: 16 }}>
               <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "500",
-                  color: "#666",
-                  marginBottom: 8,
-                }}
+                style={[
+                  styles.fieldLabel,
+                  { color: isDarkMode ? "#CCCCCC" : "#666666" },
+                ]}
               >
                 Car Number *
               </Text>
-              <TextInput
-                value={formData.carNumber}
-                onChangeText={(text) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    carNumber: text.toUpperCase(),
-                  }))
-                }
-                placeholder="RJ14 AB 1234"
-                placeholderTextColor="#999"
-                autoCapitalize="characters"
-                style={{
-                  backgroundColor: "#F5F5F5",
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  fontSize: 16,
-                  color: "#000",
-                }}
-              />
+              {renderInput(
+                "e.g., RJ14 CA 1234",
+                formData.carNumber,
+                (text) => updateFormData("carNumber", text.toUpperCase()),
+                <Car size={20} color={isDarkMode ? "#666666" : "#999999"} />
+              )}
             </View>
 
-            <View style={{ marginBottom: 16 }}>
+            {/* Preferences Section */}
+            <View
+              style={[
+                styles.section,
+                styles.preferencesSection,
+                { borderLeftColor: isDarkMode ? "#E91E63" : "#C2185B" },
+              ]}
+            >
               <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "500",
-                  color: "#666",
-                  marginBottom: 8,
-                }}
+                style={[
+                  styles.sectionTitle,
+                  { color: isDarkMode ? "#E91E63" : "#C2185B" },
+                ]}
               >
-                Additional Notes
+                ⚙️ Preferences
               </Text>
-              <TextInput
-                value={formData.description}
-                onChangeText={(text) =>
-                  setFormData((prev) => ({ ...prev, description: text }))
-                }
-                placeholder="Any additional information for passengers..."
-                placeholderTextColor="#999"
-                multiline
-                numberOfLines={3}
-                style={{
-                  backgroundColor: "#F5F5F5",
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  fontSize: 16,
-                  color: "#000",
-                  textAlignVertical: "top",
-                }}
-              />
-            </View>
-          </View>
 
-          {/* Preferences */}
-          <View style={{ padding: 20, paddingTop: 0 }}>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "600",
-                color: "#000",
-                marginBottom: 16,
-              }}
-            >
-              Ride Preferences
-            </Text>
-
-            {[
-              { key: "music", label: "Music allowed", icon: "musical-notes" },
-              { key: "smoking", label: "Smoking allowed", icon: "ban" },
-              { key: "pets", label: "Pets allowed", icon: "paw" },
-              {
-                key: "airConditioning",
-                label: "Air conditioning",
-                icon: "snow",
-              },
-            ].map((pref) => (
-              <TouchableOpacity
-                key={pref.key}
-                onPress={() =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    preferences: {
-                      ...prev.preferences,
-                      [pref.key]:
-                        !prev.preferences[
-                          pref.key as keyof typeof prev.preferences
-                        ],
-                    },
-                  }))
-                }
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  backgroundColor: "#F5F5F5",
-                  borderRadius: 12,
-                  marginBottom: 8,
-                }}
-              >
-                <Ionicons
-                  name={pref.icon as any}
-                  size={20}
-                  color="#666"
-                  style={{ marginRight: 12 }}
-                />
-                <Text style={{ flex: 1, fontSize: 16, color: "#000" }}>
-                  {pref.label}
-                </Text>
-                <View
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: 12,
-                    backgroundColor: formData.preferences[
-                      pref.key as keyof typeof formData.preferences
-                    ]
-                      ? "#000"
-                      : "#DDD",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {formData.preferences[
-                    pref.key as keyof typeof formData.preferences
-                  ] && <Ionicons name="checkmark" size={16} color="#FFF" />}
+              {[
+                {
+                  key: "airConditioning",
+                  label: "Air Conditioning",
+                  icon: "❄️",
+                },
+                { key: "music", label: "Music Allowed", icon: "🎵" },
+                { key: "smoking", label: "Smoking Allowed", icon: "🚭" },
+                { key: "pets", label: "Pets Allowed", icon: "🐕" },
+              ].map((pref) => (
+                <View key={pref.key} style={styles.preferenceRow}>
+                  <View style={styles.preferenceLeft}>
+                    <Text style={styles.preferenceIcon}>{pref.icon}</Text>
+                    <Text
+                      style={[
+                        styles.preferenceLabel,
+                        { color: isDarkMode ? "#FFFFFF" : "#000000" },
+                      ]}
+                    >
+                      {pref.label}
+                    </Text>
+                  </View>
+                  <Switch
+                    value={
+                      formData.preferences[
+                        pref.key as keyof typeof formData.preferences
+                      ]
+                    }
+                    onValueChange={(value) => updatePreference(pref.key, value)}
+                    trackColor={{
+                      false: "#767577",
+                      true: isDarkMode ? "#FFFFFF" : "#000000",
+                    }}
+                    thumbColor={isDarkMode ? "#000000" : "#FFFFFF"}
+                  />
                 </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+              ))}
+            </View>
 
-        {/* Create Button */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: "#FFF",
-            paddingHorizontal: 20,
-            paddingVertical: 16,
-            paddingBottom: Platform.OS === "ios" ? 34 : 16,
-            borderTopWidth: 1,
-            borderTopColor: "#E0E0E0",
-          }}
-        >
-          <TouchableOpacity
-            onPress={handleCreateRide}
-            disabled={isLoading}
-            style={{
-              backgroundColor: isLoading ? "#CCC" : "#000",
-              borderRadius: 12,
-              paddingVertical: 16,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#FFF",
-              }}
+            {/* Description Section */}
+            <View
+              style={[
+                styles.section,
+                styles.notesSection,
+                { borderLeftColor: isDarkMode ? "#607D8B" : "#455A64" },
+              ]}
             >
-              {isLoading ? "Creating Ride..." : "Create Ride"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { color: isDarkMode ? "#607D8B" : "#455A64" },
+                ]}
+              >
+                📝 Additional Notes
+              </Text>
 
-        {/* Date/Time Pickers */}
-        {showDatePicker && (
-          <DateTimePicker
-            value={formData.date}
-            mode="date"
-            display="default"
-            onChange={onDateChange}
-            minimumDate={new Date()}
-          />
-        )}
+              <Text
+                style={[
+                  styles.fieldLabel,
+                  { color: isDarkMode ? "#CCCCCC" : "#666666" },
+                ]}
+              >
+                Description (Optional)
+              </Text>
+              {renderInput(
+                "Any additional details for passengers...",
+                formData.description,
+                (text) => updateFormData("description", text),
+                <Settings
+                  size={20}
+                  color={isDarkMode ? "#666666" : "#999999"}
+                />,
+                "default",
+                true
+              )}
+            </View>
 
-        {showTimePicker && (
-          <DateTimePicker
-            value={formData.time}
-            mode="time"
-            display="default"
-            onChange={onTimeChange}
-          />
-        )}
-      </SafeAreaView>
+            <View style={styles.bottomPadding} />
+          </ScrollView>
+
+          {/* Create Button */}
+          <View
+            style={[
+              styles.createButtonContainer,
+              { backgroundColor: isDarkMode ? "#000000" : "#FFFFFF" },
+            ]}
+          >
+            <TouchableOpacity
+              style={[
+                styles.createButton,
+                {
+                  backgroundColor: isDarkMode ? "#FFFFFF" : "#000000",
+                  opacity: isLoading ? 0.7 : 1,
+                },
+              ]}
+              onPress={handleCreateRide}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Text
+                  style={[
+                    styles.createButtonText,
+                    { color: isDarkMode ? "#000000" : "#FFFFFF" },
+                  ]}
+                >
+                  Creating Ride...
+                </Text>
+              ) : (
+                <>
+                  <Check size={20} color={isDarkMode ? "#000000" : "#FFFFFF"} />
+                  <Text
+                    style={[
+                      styles.createButtonText,
+                      { color: isDarkMode ? "#000000" : "#FFFFFF" },
+                    ]}
+                  >
+                    Create Ride
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Enhanced Date/Time Pickers */}
+          {showDatePicker && (
+            <DateTimePicker
+              value={formData.date}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={onDateChange}
+              minimumDate={new Date()}
+              maximumDate={
+                new Date(new Date().setMonth(new Date().getMonth() + 6))
+              }
+              textColor={isDarkMode ? "#FFFFFF" : "#000000"}
+              themeVariant={isDarkMode ? "dark" : "light"}
+            />
+          )}
+
+          {showTimePicker && (
+            <DateTimePicker
+              value={formData.time}
+              mode="time"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={onTimeChange}
+              textColor={isDarkMode ? "#FFFFFF" : "#000000"}
+              themeVariant={isDarkMode ? "dark" : "light"}
+            />
+          )}
+        </SafeAreaView>
+      </View>
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.1)",
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginLeft: 16,
+    flex: 1,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+  },
+  section: {
+    marginTop: 24,
+  },
+  routeSection: {
+    borderLeftWidth: 4,
+    paddingLeft: 16,
+    marginLeft: 4,
+  },
+  scheduleSection: {
+    borderLeftWidth: 4,
+    paddingLeft: 16,
+    marginLeft: 4,
+  },
+  rideSection: {
+    borderLeftWidth: 4,
+    paddingLeft: 16,
+    marginLeft: 4,
+  },
+  vehicleSection: {
+    borderLeftWidth: 4,
+    paddingLeft: 16,
+    marginLeft: 4,
+  },
+  preferencesSection: {
+    borderLeftWidth: 4,
+    paddingLeft: 16,
+    marginLeft: 4,
+  },
+  notesSection: {
+    borderLeftWidth: 4,
+    paddingLeft: 16,
+    marginLeft: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 16,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 16,
+    paddingVertical: 16,
+  },
+  locationChipsContainer: {
+    marginBottom: 16,
+  },
+  locationChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+    borderWidth: 1,
+  },
+  locationChipText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  dateTimeContainer: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  dateTimeButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 12,
+  },
+  dateTimeText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  seatsContainer: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  seatButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  seatButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  preferenceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.1)",
+  },
+  preferenceLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  preferenceIcon: {
+    fontSize: 20,
+    marginRight: 12,
+  },
+  preferenceLabel: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  bottomPadding: {
+    height: 100,
+  },
+  createButtonContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.1)",
+  },
+  createButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  createButtonText: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+});

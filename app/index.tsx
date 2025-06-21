@@ -4,39 +4,27 @@ import {
   StyleSheet,
   useColorScheme,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import {
-  Surface,
   Text,
   ActivityIndicator,
   IconButton,
-  Avatar,
-  useTheme,
-  BottomNavigation,
-  Appbar,
   PaperProvider,
   MD3LightTheme,
   MD3DarkTheme,
 } from "react-native-paper";
-import Animated, {
+import { Animated } from "react-native";
+import ReAnimated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   Easing,
 } from "react-native-reanimated";
-import {
-  Home,
-  Bus,
-  User,
-  Bell,
-  Moon,
-  Sun,
-  Settings,
-} from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 // Import new components
 import LoadingScreen from "./components/LoadingScreen";
@@ -206,6 +194,9 @@ const AppContent = () => {
   const { user, loading, isInitialLoading, login, logout } = useAuth();
   const [index, setIndex] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [sidebarAnimation] = useState(new Animated.Value(-400));
   const colorScheme = useColorScheme();
   const router = useRouter();
 
@@ -252,6 +243,18 @@ const AppContent = () => {
     },
   ]);
 
+  const toggleSidebar = () => {
+    const toValue = sidebarVisible ? -400 : 0;
+    setSidebarVisible(!sidebarVisible);
+
+    Animated.spring(sidebarAnimation, {
+      toValue,
+      useNativeDriver: true,
+      damping: 18,
+      stiffness: 120,
+    }).start();
+  };
+
   // Show loading screen on app startup
   if (isInitialLoading) {
     return <LoadingScreen isDarkMode={isDarkMode} />;
@@ -294,57 +297,7 @@ const AppContent = () => {
       />
       <SafeAreaView style={styles.container} edges={["top"]}>
         <Animated.View style={[styles.container, animatedContainerStyle]}>
-          {/* Modern Header */}
-          <LinearGradient
-            colors={["#1A1A1A", "#2A2A2A"]}
-            style={[
-              styles.headerContainer,
-              {
-                borderBottomColor: isDarkMode ? "#333333" : "#E0E0E0",
-              },
-            ]}
-          >
-            <View style={styles.headerContent}>
-              <View style={styles.headerLeft}>
-                <View style={styles.logoContainer}>
-                  <Text style={styles.logoEmoji}>🚗</Text>
-                </View>
-                <View style={styles.titleContainer}>
-                  <Text style={styles.headerTitle}>LNMIIT Carpool</Text>
-                  <Text style={styles.headerSubtitle}>
-                    Student Ride Sharing
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.headerRight}>
-                <IconButton
-                  icon={
-                    isDarkMode ? "white-balance-sunny" : "moon-waning-crescent"
-                  }
-                  size={20}
-                  iconColor="#FFFFFF"
-                  onPress={() => setIsDarkMode(!isDarkMode)}
-                  style={[
-                    styles.iconButton,
-                    { backgroundColor: "rgba(255,255,255,0.15)" },
-                  ]}
-                />
-                <Avatar.Image
-                  size={36}
-                  source={{
-                    uri:
-                      user.profilePicture ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-                  }}
-                  style={[
-                    styles.avatar,
-                    { borderWidth: 2, borderColor: "#FFFFFF" },
-                  ]}
-                />
-              </View>
-            </View>
-          </LinearGradient>
+          {/* Header Removed */}
 
           {/* Content with Custom Bottom Navigation */}
           <View style={styles.content}>
@@ -372,6 +325,7 @@ const AppContent = () => {
                     // TODO: Handle ride join logic
                     console.log("Join ride:", rideId);
                   }}
+                  onToggleSidebar={toggleSidebar}
                 />
               )}
               {index === 1 && <BusBookingSystem isDarkMode={isDarkMode} />}
@@ -419,6 +373,8 @@ const AppContent = () => {
                   backgroundColor: isDarkMode ? "#000000" : "#FFFFFF",
                   borderTopColor: isDarkMode ? "#333333" : "#E0E0E0",
                   borderTopWidth: 1,
+                  zIndex: 1, // Lower z-index so sidebar can cover it
+                  elevation: 1, // Lower elevation for Android
                 },
               ]}
             >
@@ -477,21 +433,330 @@ const AppContent = () => {
                     >
                       {route.title}
                     </Text>
-                    {isActive && (
-                      <View
-                        style={[
-                          styles.activeIndicator,
-                          {
-                            backgroundColor: isDarkMode ? "#FFFFFF" : "#000000",
-                          },
-                        ]}
-                      />
-                    )}
+                    {/* Underline removed */}
                   </TouchableOpacity>
                 );
               })}
             </View>
           </View>
+
+          {/* Global Sidebar - positioned at app level to cover everything including bottom nav */}
+          {sidebarVisible && (
+            <>
+              {/* Sidebar */}
+              <Animated.View
+                style={[
+                  {
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "85%",
+                    height: "100%",
+                    maxWidth: 380,
+                    zIndex: 10000, // Highest possible z-index
+                    elevation: 50, // Maximum elevation for Android
+                    shadowColor: "#000",
+                    shadowOffset: { width: 4, height: 0 },
+                    shadowOpacity: 0.3,
+                    shadowRadius: 8,
+                  },
+                  {
+                    transform: [{ translateX: sidebarAnimation }],
+                  },
+                ]}
+              >
+                {/* Gradient Background */}
+                <LinearGradient
+                  colors={
+                    isDarkMode
+                      ? ["#1A1A1A", "#2A2A2A", "#1A1A1A"]
+                      : ["#FFFFFF", "#F8F9FA", "#FFFFFF"]
+                  }
+                  style={{
+                    flex: 1,
+                    paddingTop: 60,
+                  }}
+                >
+                  {/* Simplified Header */}
+                  <View
+                    style={{
+                      padding: 20,
+                      borderBottomWidth: 1,
+                      borderBottomColor: isDarkMode ? "#333" : "#E0E0E0",
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center" }}
+                      >
+                        <View
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 20,
+                            backgroundColor: isDarkMode ? "#4CAF50" : "#2E7D32",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginRight: 12,
+                          }}
+                        >
+                          <Text style={{ fontSize: 20 }}>🚗</Text>
+                        </View>
+                        <View>
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              fontWeight: "bold",
+                              color: isDarkMode ? "#FFF" : "#000",
+                            }}
+                          >
+                            LNMIIT Carpool
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              color: isDarkMode ? "#CCC" : "#666",
+                            }}
+                          >
+                            Smart. Safe. Sustainable.
+                          </Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 16,
+                          backgroundColor: isDarkMode
+                            ? "rgba(255,255,255,0.1)"
+                            : "rgba(0,0,0,0.1)",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                        onPress={toggleSidebar}
+                      >
+                        <IconButton
+                          icon="close"
+                          size={18}
+                          iconColor={isDarkMode ? "#FFF" : "#000"}
+                        />
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Status Badge */}
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginTop: 12,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: "#4CAF50",
+                          marginRight: 8,
+                        }}
+                      />
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: isDarkMode ? "#CCC" : "#666",
+                        }}
+                      >
+                        Online • 3 Active Rides
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* User Info */}
+                  <View
+                    style={{
+                      padding: 20,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: isDarkMode
+                        ? "rgba(255,255,255,0.1)"
+                        : "rgba(0,0,0,0.05)",
+                      marginHorizontal: 20,
+                      marginTop: 20,
+                      borderRadius: 12,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 24,
+                        backgroundColor: isDarkMode ? "#333" : "#F0F0F0",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 12,
+                      }}
+                    >
+                      <Text style={{ fontSize: 24 }}>👤</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "600",
+                          color: isDarkMode ? "#FFF" : "#000",
+                        }}
+                      >
+                        {user.name}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          color: isDarkMode ? "#CCC" : "#666",
+                        }}
+                      >
+                        {user.branch} • {user.year}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          color: isDarkMode ? "#CCC" : "#666",
+                          marginTop: 4,
+                        }}
+                      >
+                        ⭐ {user.rating}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Navigation Items */}
+                  <ScrollView
+                    style={{ flex: 1, padding: 20 }}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    {/* Quick Actions */}
+                    <View>
+                      <Text
+                        style={{
+                          fontSize: 12,
+                          fontWeight: "600",
+                          color: isDarkMode ? "#999" : "#666",
+                          marginBottom: 12,
+                          letterSpacing: 1,
+                        }}
+                      >
+                        QUICK ACTIONS
+                      </Text>
+
+                      {[
+                        { icon: "🚗", label: "Create Ride", action: () => {} },
+                        { icon: "📍", label: "Saved Places", action: () => {} },
+                        { icon: "🕒", label: "Recent Trips", action: () => {} },
+                        { icon: "⭐", label: "Favorites", action: () => {} },
+                        { icon: "⚙️", label: "Settings", action: () => {} },
+                      ].map((item, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            paddingVertical: 12,
+                            paddingHorizontal: 16,
+                            borderRadius: 8,
+                            marginBottom: 8,
+                            backgroundColor: isDarkMode
+                              ? "rgba(255,255,255,0.05)"
+                              : "rgba(0,0,0,0.03)",
+                          }}
+                          onPress={item.action}
+                        >
+                          <Text style={{ fontSize: 18, marginRight: 12 }}>
+                            {item.icon}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              color: isDarkMode ? "#FFF" : "#000",
+                            }}
+                          >
+                            {item.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+
+                    <View style={{ height: 40 }} />
+                  </ScrollView>
+
+                  {/* Enhanced Footer */}
+                  <View
+                    style={{
+                      padding: 20,
+                      borderTopWidth: 1,
+                      borderTopColor: isDarkMode ? "#333" : "#E0E0E0",
+                      paddingBottom: 40,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: isDarkMode ? "#666" : "#999",
+                        textAlign: "center",
+                      }}
+                    >
+                      LNMIIT Carpool v2.0
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        color: isDarkMode ? "#555" : "#CCC",
+                        textAlign: "center",
+                        marginTop: 4,
+                      }}
+                    >
+                      Safe. Reliable. Connected.
+                    </Text>
+                  </View>
+                </LinearGradient>
+              </Animated.View>
+
+              {/* Enhanced Overlay */}
+              <Animated.View
+                style={[
+                  {
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "rgba(0,0,0,0.5)",
+                    zIndex: 9999, // Just below sidebar
+                    elevation: 49,
+                  },
+                  {
+                    opacity: sidebarAnimation.interpolate({
+                      inputRange: [-400, 0],
+                      outputRange: [0, 1],
+                      extrapolate: "clamp",
+                    }),
+                  },
+                ]}
+              >
+                <TouchableOpacity
+                  style={{ flex: 1 }}
+                  activeOpacity={1}
+                  onPress={toggleSidebar}
+                />
+              </Animated.View>
+            </>
+          )}
         </Animated.View>
       </SafeAreaView>
     </View>
@@ -590,12 +855,13 @@ const styles = StyleSheet.create({
   },
   bottomNavContainer: {
     flexDirection: "row",
-    paddingVertical: 12,
+    paddingVertical: 9,
     paddingHorizontal: 16,
     paddingBottom: 20,
     marginBottom: 0,
     alignItems: "center",
     justifyContent: "space-around",
+    position: "relative", // Ensure it respects z-index
   },
   tabItem: {
     flex: 1,
@@ -603,7 +869,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 8,
     paddingHorizontal: 12,
-    minHeight: 64,
+    minHeight: 50,
     maxWidth: 80,
   },
   activeTabItem: {
