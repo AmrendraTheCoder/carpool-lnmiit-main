@@ -439,7 +439,7 @@ const BusBookingSystem: React.FC<BusBookingSystemProps> = ({
         </View>
 
         {/* Bottom spacing */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: 20 }} />
       </ScrollView>
     </View>
   );

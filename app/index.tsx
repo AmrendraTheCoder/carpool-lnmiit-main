@@ -3,6 +3,7 @@ import { View, StyleSheet, useColorScheme } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import {
   Surface,
   Text,
@@ -279,32 +280,23 @@ function AppContent() {
       <SafeAreaView style={styles.container} edges={["top"]}>
         <Animated.View style={[styles.container, animatedContainerStyle]}>
           {/* Modern Header */}
-          <View
+          <LinearGradient
+            colors={["#1A1A1A", "#2A2A2A"]}
             style={[
               styles.headerContainer,
               {
-                backgroundColor: "#1A1A1A", // Always dark header
                 borderBottomColor: isDarkMode ? "#333333" : "#E0E0E0",
               },
             ]}
           >
             <View style={styles.headerContent}>
               <View style={styles.headerLeft}>
-                <View
-                  style={[
-                    styles.logoContainer,
-                    { backgroundColor: "#FFFFFF" }, // Always white logo background
-                  ]}
+                <LinearGradient
+                  colors={["#6366f1", "#8b5cf6"]}
+                  style={styles.logoContainer}
                 >
-                  <Text
-                    style={[
-                      styles.logoText,
-                      { color: "#000000" }, // Always black text in logo
-                    ]}
-                  >
-                    L
-                  </Text>
-                </View>
+                  <Text style={styles.logoText}>L</Text>
+                </LinearGradient>
                 <View style={styles.titleContainer}>
                   <Text style={styles.headerTitle}>LNMIIT</Text>
                   <Text style={styles.headerSubtitle}>
@@ -320,53 +312,124 @@ function AppContent() {
                   icon={
                     isDarkMode ? "white-balance-sunny" : "moon-waning-crescent"
                   }
-                  size={20}
+                  size={22}
                   iconColor="#FFFFFF"
                   onPress={() => setIsDarkMode(!isDarkMode)}
                   style={[
                     styles.iconButton,
-                    { backgroundColor: "rgba(255,255,255,0.1)" },
+                    { backgroundColor: "rgba(255,255,255,0.15)" },
                   ]}
                 />
                 <IconButton
                   icon="bell-outline"
-                  size={20}
+                  size={22}
                   iconColor="#FFFFFF"
                   style={[
                     styles.iconButton,
-                    { backgroundColor: "rgba(255,255,255,0.1)" },
+                    { backgroundColor: "rgba(255,255,255,0.15)" },
                   ]}
                 />
-                <Avatar.Image
-                  size={36}
-                  source={{
-                    uri:
-                      user.profilePicture ||
-                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-                  }}
-                  style={styles.avatar}
-                />
+                <LinearGradient
+                  colors={["#6366f1", "#8b5cf6"]}
+                  style={styles.avatarGradient}
+                >
+                  <Avatar.Image
+                    size={32}
+                    source={{
+                      uri:
+                        user.profilePicture ||
+                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+                    }}
+                    style={styles.avatar}
+                  />
+                </LinearGradient>
               </View>
             </View>
-          </View>
+          </LinearGradient>
 
-          {/* Content with Bottom Navigation */}
+          {/* Content with Custom Bottom Navigation */}
           <View style={styles.content}>
-            <BottomNavigation
-              navigationState={{ index, routes }}
-              onIndexChange={setIndex}
-              renderScene={renderScene}
-              barStyle={{
-                backgroundColor: isDarkMode ? "#000000" : "#FFFFFF",
-                borderTopWidth: 1,
-                borderTopColor: isDarkMode ? "#333333" : "#E0E0E0",
-                paddingBottom: 8, // Reduced padding above home indicator
-                marginBottom: 4, // Reduced margin from bottom edge
-              }}
-              activeColor={isDarkMode ? "#FFFFFF" : "#1A1A1A"}
-              inactiveColor={isDarkMode ? "#CCCCCC" : "#999999"}
-              safeAreaInsets={{ bottom: 8 }}
-            />
+            {/* Main Content */}
+            <View style={styles.sceneContainer}>
+              {index === 0 && (
+                <UberStyleHome
+                  user={user}
+                  isDarkMode={isDarkMode}
+                  onLocationSelect={(location) => {
+                    // Location selected
+                  }}
+                  onServiceSelect={(service) => {
+                    // Service selected
+                  }}
+                />
+              )}
+              {index === 1 && <BusBookingSystem isDarkMode={isDarkMode} />}
+              {index === 2 && (
+                <UserProfileSafety
+                  user={user}
+                  onLogout={logout}
+                  isDarkMode={isDarkMode}
+                />
+              )}
+            </View>
+
+            {/* Custom Bottom Navigation */}
+            <View
+              style={[
+                styles.bottomNavContainer,
+                {
+                  backgroundColor: isDarkMode ? "#000000" : "#FFFFFF",
+                  borderTopColor: isDarkMode ? "#333333" : "#E0E0E0",
+                },
+              ]}
+            >
+              {routes.map((route, routeIndex) => {
+                const isActive = index === routeIndex;
+                const iconName = isActive
+                  ? route.focusedIcon
+                  : route.unfocusedIcon;
+
+                return (
+                  <View
+                    key={route.key}
+                    style={[styles.tabItem, isActive && styles.activeTabItem]}
+                  >
+                    <IconButton
+                      icon={iconName}
+                      size={24}
+                      iconColor={
+                        isActive
+                          ? isDarkMode
+                            ? "#FFFFFF"
+                            : "#000000"
+                          : isDarkMode
+                          ? "#666666"
+                          : "#999999"
+                      }
+                      onPress={() => setIndex(routeIndex)}
+                      style={styles.tabButton}
+                    />
+                    <Text
+                      style={[
+                        styles.tabLabel,
+                        {
+                          color: isActive
+                            ? isDarkMode
+                              ? "#FFFFFF"
+                              : "#000000"
+                            : isDarkMode
+                            ? "#666666"
+                            : "#999999",
+                          fontWeight: isActive ? "600" : "400",
+                        },
+                      ]}
+                    >
+                      {route.title}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
           </View>
         </Animated.View>
       </SafeAreaView>
@@ -424,6 +487,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 20,
     fontWeight: "900",
+    color: "#FFFFFF",
   },
   titleContainer: {
     justifyContent: "center",
@@ -448,11 +512,46 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   avatar: {
-    marginLeft: 4,
     borderWidth: 2,
     borderColor: "#FFFFFF",
   },
+  avatarGradient: {
+    borderRadius: 20,
+    padding: 2,
+    marginLeft: 4,
+  },
   content: {
     flex: 1,
+  },
+  sceneContainer: {
+    flex: 1,
+  },
+  bottomNavContainer: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    paddingBottom: 16,
+    marginBottom: 6,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    minHeight: 64,
+  },
+  activeTabItem: {
+    // No extra styling for active state - keep it simple
+  },
+  tabButton: {
+    margin: 0,
+    backgroundColor: "transparent",
+  },
+  tabLabel: {
+    fontSize: 11,
+    marginTop: 2,
+    textAlign: "center",
   },
 });

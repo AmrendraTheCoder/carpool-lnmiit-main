@@ -366,7 +366,7 @@ const UberStyleHome = ({
         </View>
 
         {/* Bottom spacing for navigation */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: 20 }} />
       </ScrollView>
     </View>
   );

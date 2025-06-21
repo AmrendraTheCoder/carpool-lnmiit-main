@@ -232,15 +232,10 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                 <Text style={styles.logoText}>L</Text>
               </LinearGradient>
 
-              <Text style={[styles.title, { color: theme.colors.onSurface }]}>
+              <Text style={[styles.title, { color: "#FFFFFF" }]}>
                 {isLogin ? "Welcome back!" : "Join LNMIIT Carpool"}
               </Text>
-              <Text
-                style={[
-                  styles.subtitle,
-                  { color: theme.colors.onSurfaceVariant },
-                ]}
-              >
+              <Text style={[styles.subtitle, { color: "#E0E0E0" }]}>
                 {isLogin
                   ? "Sign in to continue your journey"
                   : "Create your account to start sharing rides"}
@@ -257,17 +252,10 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                 }
                 style={styles.demoCardGradient}
               >
-                <Text
-                  style={[styles.demoTitle, { color: theme.colors.onSurface }]}
-                >
+                <Text style={[styles.demoTitle, { color: "#FFFFFF" }]}>
                   🚀 Quick Demo Access
                 </Text>
-                <Text
-                  style={[
-                    styles.demoSubtitle,
-                    { color: theme.colors.onSurfaceVariant },
-                  ]}
-                >
+                <Text style={[styles.demoSubtitle, { color: "#E0E0E0" }]}>
                   Try the app instantly with demo credentials
                 </Text>
 
@@ -301,9 +289,7 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                   label="Full Name"
                   value={name}
                   onChangeText={setName}
-                  leftIcon={
-                    <User size={20} color={theme.colors.onSurfaceVariant} />
-                  }
+                  leftIcon={<User size={20} color="#CCCCCC" />}
                   placeholder="Enter your full name"
                   autoCapitalize="words"
                 />
@@ -317,9 +303,7 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                   setEmailError("");
                 }}
                 error={emailError}
-                leftIcon={
-                  <Mail size={20} color={theme.colors.onSurfaceVariant} />
-                }
+                leftIcon={<Mail size={20} color="#CCCCCC" />}
                 placeholder="21UCS045@lnmiit.ac.in"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -330,9 +314,7 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                   label="Phone Number"
                   value={phone}
                   onChangeText={setPhone}
-                  leftIcon={
-                    <Phone size={20} color={theme.colors.onSurfaceVariant} />
-                  }
+                  leftIcon={<Phone size={20} color="#CCCCCC" />}
                   placeholder="Enter your phone number"
                   keyboardType="phone-pad"
                 />
@@ -347,14 +329,12 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                 }}
                 error={passwordError}
                 secureTextEntry={!showPassword}
-                leftIcon={
-                  <Lock size={20} color={theme.colors.onSurfaceVariant} />
-                }
+                leftIcon={<Lock size={20} color="#CCCCCC" />}
                 rightIcon={
                   showPassword ? (
-                    <EyeOff size={20} color={theme.colors.onSurfaceVariant} />
+                    <EyeOff size={20} color="#CCCCCC" />
                   ) : (
-                    <Eye size={20} color={theme.colors.onSurfaceVariant} />
+                    <Eye size={20} color="#CCCCCC" />
                   )
                 }
                 onRightIconPress={() => setShowPassword(!showPassword)}
@@ -367,14 +347,12 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry={!showConfirmPassword}
-                  leftIcon={
-                    <Lock size={20} color={theme.colors.onSurfaceVariant} />
-                  }
+                  leftIcon={<Lock size={20} color="#CCCCCC" />}
                   rightIcon={
                     showConfirmPassword ? (
-                      <EyeOff size={20} color={theme.colors.onSurfaceVariant} />
+                      <EyeOff size={20} color="#CCCCCC" />
                     ) : (
-                      <Eye size={20} color={theme.colors.onSurfaceVariant} />
+                      <Eye size={20} color="#CCCCCC" />
                     )
                   }
                   onRightIconPress={() =>
@@ -386,12 +364,7 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
 
               {!isLogin && (
                 <View style={styles.roleSelection}>
-                  <Text
-                    style={[
-                      styles.roleTitle,
-                      { color: theme.colors.onSurface },
-                    ]}
-                  >
+                  <Text style={[styles.roleTitle, { color: "#FFFFFF" }]}>
                     I want to
                   </Text>
                   <View style={styles.roleButtons}>

@@ -189,7 +189,7 @@ const UserProfileSafety = ({
                   { backgroundColor: isDarkMode ? "#FFFFFF" : "#000000" },
                 ],
               ]}
-              onPress={() => setActiveTab(tab.key)}
+              onPress={() => setActiveTab(tab.key as "profile" | "safety")}
             >
               <tab.icon
                 size={16}
@@ -723,7 +723,7 @@ const UserProfileSafety = ({
         )}
 
         {/* Bottom spacing */}
-        <View style={{ height: 100 }} />
+        <View style={{ height: 20 }} />
       </ScrollView>
     </View>
   );
