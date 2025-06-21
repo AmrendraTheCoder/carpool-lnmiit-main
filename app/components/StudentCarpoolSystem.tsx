@@ -5,9 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   RefreshControl,
-  SafeAreaView,
 } from "react-native";
 import { Avatar, Chip, Searchbar } from "react-native-paper";
 import {
@@ -15,7 +13,6 @@ import {
   Clock,
   Users,
   DollarSign,
-  Plus,
   Filter,
   Star,
   Phone,
@@ -25,8 +22,13 @@ import {
   User,
   Car,
   ArrowRight,
+  Plus,
 } from "lucide-react-native";
-import { Button } from "./ui/Button";
+import Button from "./ui/Button";
+import RideDetailsScreen from "./RideDetailsScreen";
+import CreateRideScreen from "./CreateRideScreen";
+import ChatScreen from "./ChatScreen";
+import { socketService } from "../services/SocketService";
 
 interface CarpoolRide {
   id: string;
@@ -75,6 +77,7 @@ interface StudentCarpoolSystemProps {
     branch: string;
     year: string;
     rating: number;
+    photo: string;
   };
   onCreateRide?: () => void;
   onJoinRide?: (rideId: string) => void;
@@ -89,6 +92,7 @@ const StudentCarpoolSystem = ({
     branch: "Computer Science",
     year: "3rd Year",
     rating: 4.7,
+    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=arjun",
   },
   onCreateRide = () => {},
   onJoinRide = () => {},
@@ -100,6 +104,12 @@ const StudentCarpoolSystem = ({
     "all" | "today" | "tomorrow" | "this_week"
   >("all");
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedRide, setSelectedRide] = useState<CarpoolRide | null>(null);
+  const [showRideDetails, setShowRideDetails] = useState(false);
+  const [showCreateRide, setShowCreateRide] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [chatRideId, setChatRideId] = useState<string>("");
+  const [chatRideTitle, setChatRideTitle] = useState<string>("");
 
   // Mock data for demonstration
   const mockRides: CarpoolRide[] = [
@@ -217,7 +227,6 @@ const StudentCarpoolSystem = ({
           joinedAt: "2024-01-14T13:45:00Z",
         },
       ],
-      status: "active",
       createdAt: "2024-01-14T11:30:00Z",
     },
   ];
@@ -225,6 +234,12 @@ const StudentCarpoolSystem = ({
   useEffect(() => {
     setRides(mockRides);
     setFilteredRides(mockRides);
+    // Connect to Socket.IO when component mounts
+    socketService.connect(currentUser.id);
+
+    return () => {
+      socketService.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -274,39 +289,40 @@ const StudentCarpoolSystem = ({
     setRefreshing(false);
   };
 
-  const handleJoinRide = (ride: CarpoolRide) => {
-    Alert.alert(
-      "Join Ride",
-      `Do you want to join ${ride.driverName}'s ride from ${ride.from} to ${ride.to}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Join",
-          onPress: () => {
-            onJoinRide(ride.id);
-            Alert.alert(
-              "Success",
-              "You've joined the ride! The driver will be notified."
-            );
-          },
-        },
-      ]
-    );
+  const handleFilterSelect = (filterKey: string, filterLabel: string) => {
+    setSelectedFilter(filterKey as any);
+    console.log(`Filter applied: ${filterLabel}`);
   };
 
-  const handleContactDriver = (ride: CarpoolRide) => {
-    Alert.alert("Contact Driver", `Contact ${ride.driverName}`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Call",
-        onPress: () => Alert.alert("Calling", `Calling ${ride.driverName}...`),
-      },
-      {
-        text: "Message",
-        onPress: () =>
-          Alert.alert("Message", `Opening chat with ${ride.driverName}...`),
-      },
-    ]);
+  const handleJoinRide = (rideId: string) => {
+    console.log(`Joining ride: ${rideId}`);
+    onJoinRide(rideId);
+  };
+
+  const handleStartChat = (rideId: string, rideTitle: string) => {
+    setChatRideId(rideId);
+    setChatRideTitle(rideTitle);
+    setShowChat(true);
+    setShowRideDetails(false);
+  };
+
+  const handleCreateRide = () => {
+    setShowCreateRide(true);
+  };
+
+  const handleRideCreated = (rideData: any) => {
+    setRides((prev) => [rideData, ...prev]);
+    setShowCreateRide(false);
+  };
+
+  const handleRideCardPress = (ride: CarpoolRide) => {
+    setSelectedRide(ride);
+    setShowRideDetails(true);
+  };
+
+  const handleBackFromDetails = () => {
+    setShowRideDetails(false);
+    setSelectedRide(null);
   };
 
   const renderRideCard = (ride: CarpoolRide) => {
@@ -314,12 +330,13 @@ const StudentCarpoolSystem = ({
     const hasJoined = ride.passengers.some((p) => p.id === currentUser.id);
 
     return (
-      <View
+      <TouchableOpacity
         key={ride.id}
         style={[
           styles.rideCard,
           { backgroundColor: isDarkMode ? "#1A1A1A" : "#FFFFFF" },
         ]}
+        onPress={() => handleRideCardPress(ride)}
       >
         {/* Driver Info */}
         <View style={styles.driverSection}>
@@ -524,14 +541,14 @@ const StudentCarpoolSystem = ({
             <>
               <Button
                 title="Contact"
-                onPress={() => handleContactDriver(ride)}
+                onPress={() => console.log(`Contact ${ride.driverName}`)}
                 variant="outline"
                 size="small"
                 style={styles.actionButton}
               />
               <Button
                 title="Join Ride"
-                onPress={() => handleJoinRide(ride)}
+                onPress={() => handleJoinRide(ride.id)}
                 variant="primary"
                 size="small"
                 style={styles.actionButton}
@@ -541,6 +558,7 @@ const StudentCarpoolSystem = ({
           {hasJoined && (
             <Button
               title="Already Joined"
+              onPress={() => {}}
               variant="outline"
               size="small"
               disabled
@@ -550,46 +568,27 @@ const StudentCarpoolSystem = ({
           {isDriverCurrentUser && (
             <Button
               title="Manage Ride"
-              onPress={() =>
-                Alert.alert("Manage", "Ride management coming soon!")
-              }
+              onPress={() => {
+                console.log(`Managing ride: ${ride.id}`);
+                // TODO: Implement ride management
+              }}
               variant="outline"
               size="small"
               style={styles.actionButton}
             />
           )}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         { backgroundColor: isDarkMode ? "#000000" : "#F5F5F5" },
       ]}
     >
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          { backgroundColor: isDarkMode ? "#000000" : "#FFFFFF" },
-        ]}
-      >
-        <Text
-          style={[
-            styles.headerTitle,
-            { color: isDarkMode ? "#FFFFFF" : "#000000" },
-          ]}
-        >
-          Student Carpool
-        </Text>
-        <TouchableOpacity style={styles.createButton} onPress={onCreateRide}>
-          <Plus size={20} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
-
       {/* Search and Filters */}
       <View style={styles.searchSection}>
         <Searchbar
@@ -628,7 +627,7 @@ const StudentCarpoolSystem = ({
                       : "#FFFFFF",
                 },
               ]}
-              onPress={() => setSelectedFilter(filter.key as any)}
+              onPress={() => handleFilterSelect(filter.key, filter.label)}
             >
               <Text
                 style={[
@@ -686,9 +685,54 @@ const StudentCarpoolSystem = ({
             </Text>
           </View>
         )}
-        <View style={{ height: 20 }} />
+        <View style={{ height: 80 }} />
       </ScrollView>
-    </SafeAreaView>
+
+      {/* Floating Create Ride Button */}
+      <TouchableOpacity
+        style={[
+          styles.floatingButton,
+          {
+            backgroundColor: isDarkMode ? "#FFFFFF" : "#000000",
+            shadowColor: isDarkMode ? "#FFFFFF" : "#000000",
+          },
+        ]}
+        onPress={handleCreateRide}
+      >
+        <Plus size={24} color={isDarkMode ? "#000000" : "#FFFFFF"} />
+      </TouchableOpacity>
+
+      {/* Ride Details Modal */}
+      {showRideDetails && selectedRide && (
+        <RideDetailsScreen
+          ride={selectedRide}
+          currentUser={currentUser}
+          visible={showRideDetails}
+          onBack={handleBackFromDetails}
+          onJoinRide={handleJoinRide}
+          onStartChat={handleStartChat}
+        />
+      )}
+
+      {/* Create Ride Modal */}
+      {showCreateRide && (
+        <CreateRideScreen
+          onBack={() => setShowCreateRide(false)}
+          onRideCreated={handleRideCreated}
+        />
+      )}
+
+      {/* Chat Modal */}
+      {showChat && (
+        <ChatScreen
+          rideId={chatRideId}
+          currentUserId={currentUser.id}
+          currentUserName={currentUser.name}
+          rideTitle={chatRideTitle}
+          onBack={() => setShowChat(false)}
+        />
+      )}
+    </View>
   );
 };
 
@@ -696,30 +740,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.1)",
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-  },
-  createButton: {
-    backgroundColor: "#000000",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   searchSection: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
   searchBar: {
     elevation: 2,
@@ -875,6 +899,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
   },
+  floatingButton: {
+    position: "absolute",
+    bottom: 90,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
 });
+
+StudentCarpoolSystem.displayName = "StudentCarpoolSystem";
 
 export default StudentCarpoolSystem;

@@ -67,10 +67,7 @@ export default function RootLayout() {
     colorScheme === "dark" ? customDarkTheme : customLightTheme;
 
   useEffect(() => {
-    if (process.env.EXPO_PUBLIC_TEMPO && Platform.OS === "web") {
-      const { TempoDevtools } = require("tempo-devtools");
-      TempoDevtools.init();
-    }
+    // Development initialization complete
   }, []);
 
   useEffect(() => {
@@ -88,7 +85,7 @@ export default function RootLayout() {
       <ThemeProvider value={DefaultTheme}>
         <Stack
           screenOptions={({ route }) => ({
-            headerShown: !route.name.startsWith("tempobook"),
+            headerShown: false,
           })}
         >
           <Stack.Screen name="index" options={{ headerShown: false }} />

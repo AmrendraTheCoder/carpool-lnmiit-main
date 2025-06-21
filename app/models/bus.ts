@@ -86,3 +86,8 @@ export interface BusSearchFilters {
   date?: string;
   departureTime?: string;
 }
+
+// Dummy default export to satisfy Expo Router
+export default function BusModel() {
+  return null;
+}

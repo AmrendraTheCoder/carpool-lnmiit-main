@@ -75,3 +75,8 @@ export interface RideRating {
   comment?: string;
   createdAt: Date;
 }
+
+// Dummy default export to satisfy Expo Router
+export default function RideModel() {
+  return null;
+}

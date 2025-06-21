@@ -108,22 +108,8 @@ const UserProfileSafety = ({
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   const handleSOS = () => {
-    Alert.alert(
-      "Emergency SOS",
-      "Are you sure you want to send an SOS alert to your emergency contacts?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Send SOS",
-          style: "destructive",
-          onPress: () =>
-            Alert.alert(
-              "SOS Alert Sent",
-              "Your emergency contacts have been notified of your location."
-            ),
-        },
-      ]
-    );
+    console.log("SOS Alert triggered - Emergency contacts would be notified");
+    // TODO: Implement actual SOS functionality
   };
 
   const renderStars = (rating: number) => {
@@ -284,12 +270,10 @@ const UserProfileSafety = ({
                     styles.editButton,
                     { backgroundColor: isDarkMode ? "#333333" : "#F5F5F5" },
                   ]}
-                  onPress={() =>
-                    Alert.alert(
-                      "Edit Profile",
-                      "Edit profile functionality coming soon!"
-                    )
-                  }
+                  onPress={() => {
+                    console.log("Edit profile pressed");
+                    // TODO: Navigate to profile edit screen
+                  }}
                 >
                   <Edit2 size={18} color={isDarkMode ? "#FFFFFF" : "#000000"} />
                 </TouchableOpacity>
@@ -421,7 +405,16 @@ const UserProfileSafety = ({
                 />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.settingItem}>
+              <TouchableOpacity
+                style={styles.settingItem}
+                onPress={() =>
+                  Alert.alert(
+                    "⚙️ App Settings",
+                    "Customize your app experience!\n\nComing Soon Features:\n• Theme preferences\n• Language settings\n• Data usage controls\n• Privacy settings\n• Account management\n• Push notification settings",
+                    [{ text: "Got it!", style: "default" }]
+                  )
+                }
+              >
                 <View style={styles.settingLeft}>
                   <Settings
                     size={20}
@@ -522,10 +515,8 @@ const UserProfileSafety = ({
                 { backgroundColor: isDarkMode ? "#FF6B6B" : "#FF0000" },
               ]}
               onPress={() => {
-                Alert.alert("Logout", "Are you sure you want to logout?", [
-                  { text: "Cancel", style: "cancel" },
-                  { text: "Logout", style: "destructive", onPress: onLogout },
-                ]);
+                console.log("Logout pressed");
+                onLogout();
               }}
             >
               <LogOut size={20} color="#FFFFFF" />
@@ -624,9 +615,12 @@ const UserProfileSafety = ({
                       styles.callButton,
                       { backgroundColor: isDarkMode ? "#00AA00" : "#00AA00" },
                     ]}
-                    onPress={() =>
-                      Alert.alert("Call", `Calling ${contact.name}...`)
-                    }
+                    onPress={() => {
+                      console.log(
+                        `Calling emergency contact: ${contact.name} - ${contact.phone}`
+                      );
+                      // TODO: Implement actual call functionality
+                    }}
                   >
                     <Phone size={16} color="#FFFFFF" />
                   </TouchableOpacity>
@@ -638,12 +632,10 @@ const UserProfileSafety = ({
                   styles.addContactButton,
                   { borderColor: isDarkMode ? "#333333" : "#E0E0E0" },
                 ]}
-                onPress={() =>
-                  Alert.alert(
-                    "Add Contact",
-                    "Add emergency contact functionality coming soon!"
-                  )
-                }
+                onPress={() => {
+                  console.log("Add emergency contact pressed");
+                  // TODO: Navigate to add contact screen
+                }}
               >
                 <Text
                   style={[

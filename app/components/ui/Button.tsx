@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   TouchableOpacity,
   Text,
@@ -6,23 +6,24 @@ import {
   ActivityIndicator,
   ViewStyle,
   TextStyle,
-} from 'react-native';
-import { useTheme } from 'react-native-paper';
-import { LinearGradient } from 'expo-linear-gradient';
+} from "react-native";
+import { useTheme } from "react-native-paper";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   withTiming,
-} from 'react-native-reanimated';
+} from "react-native-reanimated";
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
+const AnimatedTouchableOpacity =
+  Animated.createAnimatedComponent(TouchableOpacity);
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'small' | 'medium' | 'large';
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
+  size?: "small" | "medium" | "large";
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -35,8 +36,8 @@ interface ButtonProps {
 const Button: React.FC<ButtonProps> = ({
   title,
   onPress,
-  variant = 'primary',
-  size = 'medium',
+  variant = "primary",
+  size = "medium",
   loading = false,
   disabled = false,
   fullWidth = false,
@@ -59,10 +60,13 @@ const Button: React.FC<ButtonProps> = ({
     opacity.value = withTiming(1, { duration: 100 });
   };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }));
+  const animatedStyle = useAnimatedStyle(
+    () => ({
+      transform: [{ scale: scale.value }],
+      opacity: opacity.value,
+    }),
+    []
+  );
 
   const getButtonStyles = () => {
     const baseStyle = [
@@ -73,22 +77,22 @@ const Button: React.FC<ButtonProps> = ({
     ];
 
     switch (variant) {
-      case 'primary':
+      case "primary":
         return [...baseStyle, { backgroundColor: theme.colors.primary }];
-      case 'secondary':
+      case "secondary":
         return [...baseStyle, { backgroundColor: theme.colors.surfaceVariant }];
-      case 'outline':
+      case "outline":
         return [
           ...baseStyle,
           {
-            backgroundColor: 'transparent',
+            backgroundColor: "transparent",
             borderWidth: 1.5,
             borderColor: theme.colors.primary,
           },
         ];
-      case 'ghost':
-        return [...baseStyle, { backgroundColor: 'transparent' }];
-      case 'danger':
+      case "ghost":
+        return [...baseStyle, { backgroundColor: "transparent" }];
+      case "danger":
         return [...baseStyle, { backgroundColor: theme.colors.error }];
       default:
         return [...baseStyle, { backgroundColor: theme.colors.primary }];
@@ -99,15 +103,15 @@ const Button: React.FC<ButtonProps> = ({
     const baseTextStyle = [styles.text, styles[`${size}Text`]];
 
     switch (variant) {
-      case 'primary':
+      case "primary":
         return [...baseTextStyle, { color: theme.colors.onPrimary }];
-      case 'secondary':
+      case "secondary":
         return [...baseTextStyle, { color: theme.colors.onSurfaceVariant }];
-      case 'outline':
+      case "outline":
         return [...baseTextStyle, { color: theme.colors.primary }];
-      case 'ghost':
+      case "ghost":
         return [...baseTextStyle, { color: theme.colors.primary }];
-      case 'danger':
+      case "danger":
         return [...baseTextStyle, { color: theme.colors.onError }];
       default:
         return [...baseTextStyle, { color: theme.colors.onPrimary }];
@@ -132,7 +136,9 @@ const Button: React.FC<ButtonProps> = ({
         <ActivityIndicator
           size="small"
           color={
-            variant === 'outline' || variant === 'ghost'
+            variant === "outline"
+              ? theme.colors.primary
+              : variant === "ghost"
               ? theme.colors.primary
               : theme.colors.onPrimary
           }
@@ -147,7 +153,7 @@ const Button: React.FC<ButtonProps> = ({
     </AnimatedTouchableOpacity>
   );
 
-  if (variant === 'primary' && !disabled) {
+  if (variant === "primary" && !disabled) {
     return (
       <AnimatedTouchableOpacity
         style={[animatedStyle, style]}
@@ -158,7 +164,7 @@ const Button: React.FC<ButtonProps> = ({
         activeOpacity={0.9}
       >
         <LinearGradient
-          colors={['#6366f1', '#8b5cf6']}
+          colors={["#6366f1", "#8b5cf6"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[
@@ -187,11 +193,11 @@ const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -213,14 +219,14 @@ const styles = StyleSheet.create({
     minHeight: 56,
   },
   fullWidth: {
-    width: '100%',
+    width: "100%",
   },
   disabled: {
     opacity: 0.5,
   },
   text: {
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   smallText: {
     fontSize: 14,
@@ -233,4 +239,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Button; 
+export default Button;

@@ -23,18 +23,11 @@ config.transformer = {
   enableBabelRuntime: false,
 };
 
-// Add CORS configuration for Tempo development environment
+// Add CORS configuration for development environment
 config.server = {
   ...config.server,
   cors: {
-    origin: [
-      "https://app.tempo.new",
-      "https://tempo.new",
-      "http://localhost:3000",
-      "http://localhost:19006",
-      "https://intelligent-williams1-s4hpn.view-3.tempo-dev.app",
-      "*",
-    ],
+    origin: ["http://localhost:3000", "http://localhost:19006", "*"],
     credentials: true,
   },
 };

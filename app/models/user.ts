@@ -51,3 +51,8 @@ export interface AuthResponse {
   token: string;
   refreshToken: string;
 }
+
+// Dummy default export to satisfy Expo Router
+export default function UserModel() {
+  return null;
+}

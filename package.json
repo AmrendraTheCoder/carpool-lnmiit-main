@@ -1,5 +1,5 @@
 {
-  "name": "test-tempo",
+  "name": "lnmiit-carpool",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -19,7 +19,9 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
+    "@gorhom/bottom-sheet": "^5.1.6",
     "@radix-ui/react-tabs": "^1.1.12",
+    "@react-native-community/datetimepicker": "^8.4.2",
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@react-three/drei": "^10.3.0",
@@ -30,8 +32,6 @@
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.5",
     "expo-font": "~13.3.1",
-    "expo-gl": "~15.1.6",
-    "expo-gl-cpp": "^11.4.0",
     "expo-haptics": "~14.1.4",
     "expo-image": "~2.3.0",
     "expo-linear-gradient": "~14.1.5",
@@ -41,7 +41,6 @@
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.5",
     "expo-system-ui": "~5.0.9",
-    "expo-three": "^8.0.0",
     "expo-web-browser": "~14.2.0",
     "lightningcss": "^1.29.2",
     "lottie-react-native": "7.2.2",
@@ -51,6 +50,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.4",
+    "react-native-bottom-sheet": "^1.0.3",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-paper": "^5.14.5",
     "react-native-reanimated": "~3.17.4",
@@ -60,9 +60,8 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
-    "tailwindcss": "^3.4.17",
-    "tempo-devtools": "^2.0.108",
-    "three": "^0.177.0"
+    "socket.io-client": "^4.8.1",
+    "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

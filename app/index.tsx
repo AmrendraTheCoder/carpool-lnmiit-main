@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, useColorScheme, Alert } from "react-native";
+import {
+  View,
+  StyleSheet,
+  useColorScheme,
+  TouchableOpacity,
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -197,7 +202,7 @@ const useAuth = () => {
   return { user, loading, isInitialLoading, login, logout };
 };
 
-function AppContent() {
+const AppContent = () => {
   const { user, loading, isInitialLoading, login, logout } = useAuth();
   const [index, setIndex] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -208,7 +213,8 @@ function AppContent() {
   const themeTransition = useSharedValue(0);
 
   useEffect(() => {
-    setIsDarkMode(colorScheme === "dark");
+    // Default to light theme instead of following system
+    setIsDarkMode(false);
   }, [colorScheme]);
 
   useEffect(() => {
@@ -218,9 +224,12 @@ function AppContent() {
     });
   }, [isDarkMode]);
 
-  const animatedContainerStyle = useAnimatedStyle(() => ({
-    backgroundColor: isDarkMode ? "#000000" : "#FFFFFF",
-  }));
+  const animatedContainerStyle = useAnimatedStyle(
+    () => ({
+      backgroundColor: isDarkMode ? "#000000" : "#FFFFFF",
+    }),
+    [isDarkMode]
+  );
 
   const [routes] = useState([
     {
@@ -297,18 +306,13 @@ function AppContent() {
           >
             <View style={styles.headerContent}>
               <View style={styles.headerLeft}>
-                <LinearGradient
-                  colors={["#6366f1", "#8b5cf6"]}
-                  style={styles.logoContainer}
-                >
-                  <Text style={styles.logoText}>L</Text>
-                </LinearGradient>
+                <View style={styles.logoContainer}>
+                  <Text style={styles.logoEmoji}>🚗</Text>
+                </View>
                 <View style={styles.titleContainer}>
-                  <Text style={styles.headerTitle}>LNMIIT</Text>
+                  <Text style={styles.headerTitle}>LNMIIT Carpool</Text>
                   <Text style={styles.headerSubtitle}>
-                    {user.role === "external_driver"
-                      ? "Driver Dashboard"
-                      : "Student Carpool"}
+                    Student Ride Sharing
                   </Text>
                 </View>
               </View>
@@ -318,7 +322,7 @@ function AppContent() {
                   icon={
                     isDarkMode ? "white-balance-sunny" : "moon-waning-crescent"
                   }
-                  size={22}
+                  size={20}
                   iconColor="#FFFFFF"
                   onPress={() => setIsDarkMode(!isDarkMode)}
                   style={[
@@ -326,29 +330,18 @@ function AppContent() {
                     { backgroundColor: "rgba(255,255,255,0.15)" },
                   ]}
                 />
-                <IconButton
-                  icon="bell-outline"
-                  size={22}
-                  iconColor="#FFFFFF"
+                <Avatar.Image
+                  size={36}
+                  source={{
+                    uri:
+                      user.profilePicture ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+                  }}
                   style={[
-                    styles.iconButton,
-                    { backgroundColor: "rgba(255,255,255,0.15)" },
+                    styles.avatar,
+                    { borderWidth: 2, borderColor: "#FFFFFF" },
                   ]}
                 />
-                <LinearGradient
-                  colors={["#6366f1", "#8b5cf6"]}
-                  style={styles.avatarGradient}
-                >
-                  <Avatar.Image
-                    size={32}
-                    source={{
-                      uri:
-                        user.profilePicture ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-                    }}
-                    style={styles.avatar}
-                  />
-                </LinearGradient>
               </View>
             </View>
           </LinearGradient>
@@ -367,16 +360,18 @@ function AppContent() {
                     branch: user.branch,
                     year: user.year,
                     rating: user.rating,
+                    photo:
+                      user.profilePicture ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
                   }}
-                  onCreateRide={() =>
-                    Alert.alert(
-                      "Create Ride",
-                      "Create ride feature coming soon!"
-                    )
-                  }
-                  onJoinRide={(rideId) =>
-                    Alert.alert("Join Ride", `Joining ride ${rideId}...`)
-                  }
+                  onCreateRide={() => {
+                    // TODO: Navigate to create ride screen
+                    console.log("Create ride from StudentCarpool");
+                  }}
+                  onJoinRide={(rideId) => {
+                    // TODO: Handle ride join logic
+                    console.log("Join ride:", rideId);
+                  }}
                 />
               )}
               {index === 1 && <BusBookingSystem isDarkMode={isDarkMode} />}
@@ -421,8 +416,9 @@ function AppContent() {
               style={[
                 styles.bottomNavContainer,
                 {
-                  backgroundColor: "transparent",
-                  borderTopColor: "transparent",
+                  backgroundColor: isDarkMode ? "#000000" : "#FFFFFF",
+                  borderTopColor: isDarkMode ? "#333333" : "#E0E0E0",
+                  borderTopWidth: 1,
                 },
               ]}
             >
@@ -433,25 +429,37 @@ function AppContent() {
                   : route.unfocusedIcon;
 
                 return (
-                  <View
+                  <TouchableOpacity
                     key={route.key}
                     style={[styles.tabItem, isActive && styles.activeTabItem]}
+                    onPress={() => setIndex(routeIndex)}
+                    activeOpacity={0.7}
                   >
-                    <IconButton
-                      icon={iconName}
-                      size={24}
-                      iconColor={
-                        isActive
-                          ? isDarkMode
-                            ? "#FFFFFF"
-                            : "#000000"
-                          : isDarkMode
-                          ? "#666666"
-                          : "#999999"
-                      }
-                      onPress={() => setIndex(routeIndex)}
-                      style={styles.tabButton}
-                    />
+                    <View
+                      style={[
+                        styles.tabIconContainer,
+                        isActive && {
+                          backgroundColor: isDarkMode
+                            ? "rgba(255,255,255,0.1)"
+                            : "rgba(0,0,0,0.1)",
+                        },
+                      ]}
+                    >
+                      <IconButton
+                        icon={iconName}
+                        size={22}
+                        iconColor={
+                          isActive
+                            ? isDarkMode
+                              ? "#FFFFFF"
+                              : "#000000"
+                            : isDarkMode
+                            ? "#666666"
+                            : "#999999"
+                        }
+                        style={styles.tabButton}
+                      />
+                    </View>
                     <Text
                       style={[
                         styles.tabLabel,
@@ -463,13 +471,23 @@ function AppContent() {
                             : isDarkMode
                             ? "#666666"
                             : "#999999",
-                          fontWeight: isActive ? "600" : "400",
+                          fontWeight: isActive ? "700" : "500",
                         },
                       ]}
                     >
                       {route.title}
                     </Text>
-                  </View>
+                    {isActive && (
+                      <View
+                        style={[
+                          styles.activeIndicator,
+                          {
+                            backgroundColor: isDarkMode ? "#FFFFFF" : "#000000",
+                          },
+                        ]}
+                      />
+                    )}
+                  </TouchableOpacity>
                 );
               })}
             </View>
@@ -478,7 +496,9 @@ function AppContent() {
       </SafeAreaView>
     </View>
   );
-}
+};
+
+AppContent.displayName = "AppContent";
 
 export default function App() {
   return (
@@ -526,11 +546,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+    backgroundColor: "rgba(255,255,255,0.1)",
   },
-  logoText: {
+  logoEmoji: {
     fontSize: 20,
-    fontWeight: "900",
-    color: "#FFFFFF",
   },
   titleContainer: {
     justifyContent: "center",
@@ -571,32 +590,48 @@ const styles = StyleSheet.create({
   },
   bottomNavContainer: {
     flexDirection: "row",
-    borderTopWidth: 0,
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    paddingBottom: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingBottom: 20,
     marginBottom: 0,
+    alignItems: "center",
+    justifyContent: "space-around",
   },
   tabItem: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    minHeight: 60,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    minHeight: 64,
+    maxWidth: 80,
   },
   activeTabItem: {
-    // No extra styling for active state - keep it simple
+    transform: [{ scale: 1.05 }],
   },
   tabButton: {
     margin: 0,
-    padding: 4,
+    padding: 6,
     backgroundColor: "transparent",
   },
   tabLabel: {
-    fontSize: 11,
-    marginTop: 4,
+    fontSize: 12,
+    marginTop: 6,
     textAlign: "center",
     fontWeight: "500",
+    letterSpacing: 0.3,
+  },
+  tabIconContainer: {
+    borderRadius: 12,
+    padding: 4,
+  },
+  activeIndicator: {
+    position: "absolute",
+    bottom: 0,
+    left: "50%",
+    marginLeft: -12,
+    width: 24,
+    height: 3,
+    borderRadius: 2,
   },
 });

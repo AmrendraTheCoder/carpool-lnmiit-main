@@ -8,6 +8,7 @@ import {
   TextInput,
   StyleSheet,
   Dimensions,
+  Alert,
 } from "react-native";
 import {
   MapPin,
@@ -149,6 +150,9 @@ const BusBookingSystem: React.FC<BusBookingSystemProps> = ({
 
   const handleBooking = () => {
     if (selectedBus && selectedSeats.length > 0) {
+      console.log(
+        `Booking bus ${selectedBus.id}, seats: ${selectedSeats.join(", ")}`
+      );
       onBookBus(selectedBus.id, selectedSeats);
       setActiveTab("ticket");
     }
