@@ -390,40 +390,35 @@ function AppContent() {
                   : route.unfocusedIcon;
 
                 return (
-                  <Animated.View
+                  <View
                     key={route.key}
                     style={[styles.tabItem, isActive && styles.activeTabItem]}
                   >
-                    {isActive && (
-                      <LinearGradient
-                        colors={["#6366f1", "#8b5cf6"]}
-                        style={styles.activeTabBackground}
-                      />
-                    )}
                     <IconButton
                       icon={iconName}
                       size={24}
                       iconColor={
                         isActive
-                          ? "#FFFFFF"
+                          ? isDarkMode
+                            ? "#FFFFFF"
+                            : "#000000"
                           : isDarkMode
-                          ? "#CCCCCC"
+                          ? "#666666"
                           : "#999999"
                       }
                       onPress={() => setIndex(routeIndex)}
-                      style={[
-                        styles.tabButton,
-                        isActive && styles.activeTabButton,
-                      ]}
+                      style={styles.tabButton}
                     />
                     <Text
                       style={[
                         styles.tabLabel,
                         {
                           color: isActive
-                            ? "#FFFFFF"
+                            ? isDarkMode
+                              ? "#FFFFFF"
+                              : "#000000"
                             : isDarkMode
-                            ? "#CCCCCC"
+                            ? "#666666"
                             : "#999999",
                           fontWeight: isActive ? "600" : "400",
                         },
@@ -431,15 +426,7 @@ function AppContent() {
                     >
                       {route.title}
                     </Text>
-                    {isActive && (
-                      <View
-                        style={[
-                          styles.activeIndicator,
-                          { backgroundColor: "#FFFFFF" },
-                        ]}
-                      />
-                    )}
-                  </Animated.View>
+                  </View>
                 );
               })}
             </View>
@@ -542,50 +529,29 @@ const styles = StyleSheet.create({
   bottomNavContainer: {
     flexDirection: "row",
     borderTopWidth: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    paddingBottom: 12,
-    marginBottom: 4,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    paddingBottom: 16,
+    marginBottom: 6,
   },
   tabItem: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderRadius: 16,
-    position: "relative",
+    paddingHorizontal: 8,
     minHeight: 64,
   },
   activeTabItem: {
-    transform: [{ scale: 1.05 }],
-  },
-  activeTabBackground: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 16,
-    opacity: 0.9,
+    // No extra styling for active state - keep it simple
   },
   tabButton: {
     margin: 0,
-    backgroundColor: "transparent",
-  },
-  activeTabButton: {
     backgroundColor: "transparent",
   },
   tabLabel: {
     fontSize: 11,
     marginTop: 2,
     textAlign: "center",
-  },
-  activeIndicator: {
-    position: "absolute",
-    bottom: -2,
-    width: 24,
-    height: 3,
-    borderRadius: 2,
   },
 });

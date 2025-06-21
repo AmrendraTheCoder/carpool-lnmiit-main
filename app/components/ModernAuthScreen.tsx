@@ -289,9 +289,7 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                   label="Full Name"
                   value={name}
                   onChangeText={setName}
-                  leftIcon={
-                    <User size={20} color={theme.colors.onSurfaceVariant} />
-                  }
+                  leftIcon={<User size={20} color="#CCCCCC" />}
                   placeholder="Enter your full name"
                   autoCapitalize="words"
                 />
@@ -305,9 +303,7 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                   setEmailError("");
                 }}
                 error={emailError}
-                leftIcon={
-                  <Mail size={20} color={theme.colors.onSurfaceVariant} />
-                }
+                leftIcon={<Mail size={20} color="#CCCCCC" />}
                 placeholder="21UCS045@lnmiit.ac.in"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -318,9 +314,7 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                   label="Phone Number"
                   value={phone}
                   onChangeText={setPhone}
-                  leftIcon={
-                    <Phone size={20} color={theme.colors.onSurfaceVariant} />
-                  }
+                  leftIcon={<Phone size={20} color="#CCCCCC" />}
                   placeholder="Enter your phone number"
                   keyboardType="phone-pad"
                 />
@@ -335,14 +329,12 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                 }}
                 error={passwordError}
                 secureTextEntry={!showPassword}
-                leftIcon={
-                  <Lock size={20} color={theme.colors.onSurfaceVariant} />
-                }
+                leftIcon={<Lock size={20} color="#CCCCCC" />}
                 rightIcon={
                   showPassword ? (
-                    <EyeOff size={20} color={theme.colors.onSurfaceVariant} />
+                    <EyeOff size={20} color="#CCCCCC" />
                   ) : (
-                    <Eye size={20} color={theme.colors.onSurfaceVariant} />
+                    <Eye size={20} color="#CCCCCC" />
                   )
                 }
                 onRightIconPress={() => setShowPassword(!showPassword)}
@@ -355,14 +347,12 @@ const ModernAuthScreen: React.FC<ModernAuthScreenProps> = ({
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry={!showConfirmPassword}
-                  leftIcon={
-                    <Lock size={20} color={theme.colors.onSurfaceVariant} />
-                  }
+                  leftIcon={<Lock size={20} color="#CCCCCC" />}
                   rightIcon={
                     showConfirmPassword ? (
-                      <EyeOff size={20} color={theme.colors.onSurfaceVariant} />
+                      <EyeOff size={20} color="#CCCCCC" />
                     ) : (
-                      <Eye size={20} color={theme.colors.onSurfaceVariant} />
+                      <Eye size={20} color="#CCCCCC" />
                     )
                   }
                   onRightIconPress={() =>
