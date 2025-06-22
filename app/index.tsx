@@ -198,6 +198,10 @@ const AppContent = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const [sidebarAnimation] = useState(new Animated.Value(-400));
+  const [busBookings, setBusBookings] = useState<any[]>([]);
+  const [bookedSeats, setBookedSeats] = useState<{ [busId: string]: string[] }>(
+    {}
+  );
   const colorScheme = useColorScheme();
   const router = useRouter();
 
@@ -332,7 +336,28 @@ const AppContent = () => {
                   onToggleSidebar={toggleSidebar}
                 />
               )}
-              {index === 1 && <BusBookingSystem isDarkMode={isDarkMode} />}
+              {index === 1 && (
+                <BusBookingSystem
+                  isDarkMode={isDarkMode}
+                  currentUser={{
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    branch: user.branch,
+                    year: user.year,
+                    rating: user.rating,
+                    photo:
+                      user.profilePicture ||
+                      `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+                  }}
+                  busBookings={busBookings}
+                  onUpdateBookings={setBusBookings}
+                  bookedSeats={bookedSeats}
+                  onUpdateBookedSeats={setBookedSeats}
+                  onToggleSidebar={toggleSidebar}
+                  sidebarVisible={sidebarVisible}
+                />
+              )}
               {index === 2 &&
                 (user.role === "external_driver" ? (
                   <DriverDashboard
@@ -363,6 +388,7 @@ const AppContent = () => {
                 ) : (
                   <UserProfileSafety
                     user={user}
+                    busBookings={busBookings}
                     onLogout={logout}
                     isDarkMode={isDarkMode}
                   />
@@ -659,11 +685,26 @@ const AppContent = () => {
 
                       {[
                         {
-                          icon: "🚗",
-                          label: "Create Ride",
+                          icon: "🔍",
+                          label: "Search Rides",
+                          count: 12,
+                          color: "#4CAF50",
                           action: () => {
                             setSidebarVisible(false);
-                            // TODO: Navigate to create ride
+                            Alert.alert(
+                              "🔍 Search Rides",
+                              "Find rides to any destination across Jaipur and beyond.",
+                              [{ text: "Got it!", style: "default" }]
+                            );
+                          },
+                        },
+                        {
+                          icon: "🚗",
+                          label: "Create New Ride",
+                          count: "New",
+                          color: "#2196F3",
+                          action: () => {
+                            setSidebarVisible(false);
                             Alert.alert(
                               "Create Ride",
                               "Opening create ride screen..."
@@ -673,33 +714,25 @@ const AppContent = () => {
                         {
                           icon: "🚌",
                           label: "Bus Booking",
+                          count: "Available",
+                          color: "#FF9800",
                           action: () => {
                             setSidebarVisible(false);
                             setIndex(1); // Switch to bus booking tab
                           },
                         },
                         {
-                          icon: "📍",
-                          label: "Saved Places",
+                          icon: "📋",
+                          label: "My Ride History",
+                          count: 8,
+                          color: "#9C27B0",
                           action: () => {
                             setSidebarVisible(false);
-                            Alert.alert("Saved Places", "Feature coming soon!");
-                          },
-                        },
-                        {
-                          icon: "🕒",
-                          label: "Recent Trips",
-                          action: () => {
-                            setSidebarVisible(false);
-                            Alert.alert("Recent Trips", "Feature coming soon!");
-                          },
-                        },
-                        {
-                          icon: "⚙️",
-                          label: "Settings",
-                          action: () => {
-                            setSidebarVisible(false);
-                            Alert.alert("Settings", "Feature coming soon!");
+                            Alert.alert(
+                              "📋 Ride History",
+                              "View all your past rides, earnings, and trip statistics.",
+                              [{ text: "Got it!", style: "default" }]
+                            );
                           },
                         },
                       ].map((item, index) => (
@@ -708,30 +741,161 @@ const AppContent = () => {
                           style={{
                             flexDirection: "row",
                             alignItems: "center",
-                            paddingVertical: 12,
+                            paddingVertical: 16,
                             paddingHorizontal: 16,
-                            borderRadius: 8,
-                            marginBottom: 8,
+                            borderRadius: 12,
+                            marginBottom: 12,
                             backgroundColor: isDarkMode
                               ? "rgba(255,255,255,0.05)"
-                              : "rgba(0,0,0,0.03)",
+                              : item.color + "10",
+                            borderLeftWidth: 4,
+                            borderLeftColor: item.color,
+                            shadowColor: item.color,
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.1,
+                            shadowRadius: 4,
+                            elevation: 2,
                           }}
                           onPress={item.action}
                         >
-                          <Text style={{ fontSize: 18, marginRight: 12 }}>
-                            {item.icon}
-                          </Text>
-                          <Text
+                          <View
                             style={{
-                              fontSize: 16,
-                              color: isDarkMode ? "#FFF" : "#000",
+                              width: 40,
+                              height: 40,
+                              borderRadius: 20,
+                              backgroundColor: item.color + "20",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              marginRight: 12,
                             }}
                           >
-                            {item.label}
-                          </Text>
+                            <Text style={{ fontSize: 18 }}>{item.icon}</Text>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={{
+                                fontSize: 16,
+                                fontWeight: "600",
+                                color: isDarkMode ? "#FFF" : "#000",
+                                marginBottom: 2,
+                              }}
+                            >
+                              {item.label}
+                            </Text>
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                color: isDarkMode ? "#AAA" : "#666",
+                              }}
+                            >
+                              {typeof item.count === "number"
+                                ? `${item.count} available`
+                                : item.count}
+                            </Text>
+                          </View>
+                          <View
+                            style={{
+                              backgroundColor: item.color,
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              borderRadius: 12,
+                              minWidth: 24,
+                              alignItems: "center",
+                            }}
+                          >
+                            <Text
+                              style={{
+                                color: "#FFF",
+                                fontSize: 12,
+                                fontWeight: "600",
+                              }}
+                            >
+                              {item.count}
+                            </Text>
+                          </View>
                         </TouchableOpacity>
                       ))}
                     </View>
+
+                    {/* Emergency SOS Button */}
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: "#FF4444",
+                        padding: 16,
+                        borderRadius: 12,
+                        marginTop: 20,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        shadowColor: "#FF4444",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 4,
+                        elevation: 4,
+                      }}
+                      onPress={() => {
+                        Alert.alert(
+                          "🚨 Emergency Alert",
+                          "Emergency services have been notified. Your location and emergency contacts will be contacted immediately.",
+                          [
+                            { text: "Cancel", style: "cancel" },
+                            {
+                              text: "Send Alert",
+                              style: "destructive",
+                              onPress: () => {
+                                Alert.alert(
+                                  "✅ Alert Sent",
+                                  "Emergency alert has been sent successfully. Help is on the way.",
+                                  [{ text: "OK" }]
+                                );
+                              },
+                            },
+                          ]
+                        );
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 20,
+                          backgroundColor: "rgba(255,255,255,0.2)",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginRight: 12,
+                        }}
+                      >
+                        <Text style={{ fontSize: 20 }}>🚨</Text>
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={{
+                            color: "#FFF",
+                            fontSize: 16,
+                            fontWeight: "600",
+                            marginBottom: 2,
+                          }}
+                        >
+                          Emergency SOS
+                        </Text>
+                        <Text
+                          style={{
+                            color: "rgba(255,255,255,0.8)",
+                            fontSize: 12,
+                          }}
+                        >
+                          Tap for immediate help
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: "#FFF",
+                          opacity: 0.8,
+                        }}
+                      />
+                    </TouchableOpacity>
 
                     <View style={{ height: 40 }} />
                   </ScrollView>

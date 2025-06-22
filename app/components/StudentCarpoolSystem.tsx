@@ -1253,8 +1253,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   menuItemCount: {
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   sidebarFooter: {
     padding: 20,
@@ -1271,8 +1272,7 @@ const styles = StyleSheet.create({
   },
   sidebarHeader: {
     padding: 24,
-    paddingTop: 70, // More space from top
-    paddingBottom: 24,
+    paddingTop: 60,
   },
   closeBtn: {
     marginRight: 16,
@@ -1323,7 +1323,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: "rgba(0,0,0,0.6)",
-    zIndex: 9998, // Just below sidebar but very high
+    zIndex: 9998,
   },
   overlayTouchable: {
     flex: 1,
@@ -1785,6 +1785,81 @@ const styles = StyleSheet.create({
   confirmVerificationText: {
     fontSize: 14,
     fontWeight: "600",
+  },
+  colorfulMenuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  menuItemIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  menuItemContent: {
+    flex: 1,
+  },
+  menuItemSubtext: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  menuItemBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 12,
+    backgroundColor: "#FFF",
+  },
+  safetySection: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.1)",
+  },
+  safetyAlertButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 8,
+  },
+  safetyButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  safetyIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  safetyTextContainer: {
+    flex: 1,
+  },
+  safetyMainText: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  safetySubText: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  safetyPulse: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#FFF",
+    marginLeft: 8,
+  },
+  safetyPulseInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#4CAF50",
+    margin: 2,
   },
 });
 

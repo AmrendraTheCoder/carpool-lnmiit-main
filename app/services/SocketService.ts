@@ -157,3 +157,6 @@ class SocketService {
 
 export const socketService = new SocketService();
 export type { ChatMessage, RideRequest };
+
+// Default export to fix the warning
+export default SocketService;
